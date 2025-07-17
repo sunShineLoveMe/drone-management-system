@@ -1,0 +1,2624 @@
+/* 现代化无人机管理系统样式 - 修复版 */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* 主题色彩 */
+    --primary-color: #2563eb;
+    --primary-dark: #1d4ed8;
+    --secondary-color: #64748b;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --error-color: #ef4444;
+    
+    /* 背景色彩 */
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    --bg-card: #1e293b;
+    
+    /* 文字色彩 */
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    
+    /* 边框色彩 */
+    --border-color: #475569;
+    --border-light: #334155;
+    
+    /* 阴影 */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    
+    /* 动画 */
+    --transition-fast: 0.15s ease-in-out;
+    --transition-normal: 0.3s ease-in-out;
+    --transition-slow: 0.5s ease-in-out;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.5;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 应用容器 */
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: var(--bg-primary);
+    overflow: hidden;
+}
+
+/* 顶部导航栏 */
+.top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 1.5rem;
+    box-shadow: var(--shadow-sm);
+    flex-shrink: 0;
+    min-width: 0;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logo-section i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.logo-section h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.status-indicators {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.status-dot.online {
+    background-color: var(--success-color);
+}
+
+.status-dot.warning {
+    background-color: var(--warning-color);
+}
+
+.status-dot.error {
+    background-color: var(--error-color);
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 currentColor;
+    }
+    70% {
+        box-shadow: 0 0 0 4px rgba(0, 0, 0, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    }
+}
+
+.user-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.notification-icon {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color var(--transition-fast);
+}
+
+.notification-icon:hover {
+    color: var(--text-primary);
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.user-profile img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+/* 主内容区域 */
+.main-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
+}
+
+/* 侧边栏 */
+.sidebar {
+    width: 240px;
+    background-color: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
+    padding: 1rem 0;
+    flex-shrink: 0;
+    overflow-y: auto;
+}
+
+.nav-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0 0.75rem;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: 0.5rem;
+    transition: all var(--transition-fast);
+    font-size: 0.875rem;
+}
+
+.nav-item:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.nav-item.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.nav-item i {
+    width: 16px;
+    text-align: center;
+}
+
+/* 内容区域 */
+.content-area {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+    background-color: var(--bg-primary);
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.content-section {
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.content-section.active {
+    display: flex;
+    flex-direction: column;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.section-header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* 统一样式 */
+.primary-btn, .secondary-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.primary-btn {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.primary-btn:hover {
+    background-color: var(--primary-dark);
+}
+
+.secondary-btn {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.secondary-btn:hover {
+    background-color: var(--border-color);
+}
+
+.refresh-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: color var(--transition-fast);
+}
+
+.refresh-btn:hover {
+    color: var(--text-primary);
+}
+
+/* Dashboard 样式 */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background-color: var(--bg-card);
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-md);
+    transition: transform var(--transition-fast);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 0.75rem;
+    font-size: 1.5rem;
+}
+
+.stat-icon.blue {
+    background-color: rgba(37, 99, 235, 0.1);
+    color: var(--primary-color);
+}
+
+.stat-icon.green {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--success-color);
+}
+
+.stat-icon.orange {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--warning-color);
+}
+
+.stat-icon.red {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--error-color);
+}
+
+.stat-info h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.stat-info p {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    max-height: calc(100vh - 200px);
+}
+
+@media (max-width: 1200px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.dashboard-card {
+    background-color: var(--bg-card);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.dashboard-card h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    flex-shrink: 0;
+}
+
+.mini-map {
+    flex: 1;
+    border-radius: 0.5rem;
+    background-color: var(--bg-tertiary);
+    min-height: 250px;
+    max-height: 400px;
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-card canvas {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 250px;
+}
+
+.dashboard-card:last-child {
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-card:last-child canvas {
+    flex: 1;
+    max-height: none;
+    min-height: 200px;
+}
+
+/* 任务规划样式 */
+.missions-container {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 1.5rem;
+    flex: 1;
+    min-height: 0;
+}
+
+@media (max-width: 1200px) {
+    .missions-container {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+}
+
+.missions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    overflow-y: auto;
+}
+
+.mission-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: var(--bg-card);
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-fast);
+}
+
+.mission-item:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.mission-status {
+    width: 4px;
+    height: 100%;
+    border-radius: 2px;
+    align-self: stretch;
+}
+
+.mission-status.active {
+    background-color: var(--success-color);
+}
+
+.mission-status.pending {
+    background-color: var(--warning-color);
+}
+
+.mission-info {
+    flex: 1;
+}
+
+.mission-info h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.mission-info p {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.mission-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.mission-meta i {
+    margin-right: 0.25rem;
+}
+
+.mission-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.mission-planner {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.full-map {
+    flex: 1;
+    border-radius: 0.75rem;
+    background-color: var(--bg-tertiary);
+    min-height: 400px;
+}
+
+.mission-controls {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+/* 设备管理样式 */
+.filter-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.filter-select {
+    padding: 0.5rem;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+.drones-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    width: 100%;
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem 0;
+}
+
+.drone-card {
+    background-color: var(--bg-card);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    box-shadow: var(--shadow-md);
+    transition: transform var(--transition-fast);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.drone-card:hover {
+    transform: translateY(-2px);
+}
+
+.drone-card.online {
+    border-left: 4px solid var(--success-color);
+}
+
+.drone-card.mission {
+    border-left: 4px solid var(--warning-color);
+}
+
+.drone-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.drone-header h4 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.status-badge.online {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--success-color);
+}
+
+.status-badge.mission {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--warning-color);
+}
+
+.drone-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100px;
+    background-color: var(--bg-tertiary);
+    border-radius: 0.5rem;
+    margin-bottom: 0.75rem;
+    flex-shrink: 0;
+}
+
+.drone-image i {
+    font-size: 2.5rem;
+    color: var(--text-muted);
+}
+
+.drone-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    margin-bottom: 0.75rem;
+    flex: 1;
+    min-height: 0;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+}
+
+.info-item span:first-child {
+    color: var(--text-secondary);
+}
+
+.battery-level {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.battery-bar {
+    height: 4px;
+    background-color: var(--success-color);
+    border-radius: 2px;
+    transition: width var(--transition-fast);
+}
+
+.signal-strength {
+    font-size: 0.875rem;
+    letter-spacing: 2px;
+}
+
+.signal-strength.good {
+    color: var(--success-color);
+}
+
+.drone-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    margin-top: auto;
+}
+
+.btn-small {
+    flex: 1;
+    padding: 0.5rem;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-small:hover {
+    background-color: var(--border-color);
+}
+
+/* 数据分析样式 */
+.date-range {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    background-color: var(--bg-card);
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.date-range input {
+    padding: 0.5rem 0.75rem;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-light);
+    border-radius: 0.375rem;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    min-width: 120px;
+    max-width: 140px;
+    transition: border-color var(--transition-fast);
+}
+
+.date-range input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.date-range span {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    align-content: start;
+}
+
+.analytics-card {
+    background-color: var(--bg-card);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-height: 450px;
+}
+
+.analytics-card h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    flex-shrink: 0;
+}
+
+.analytics-card canvas {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 300px;
+    flex: 1;
+    min-height: 200px;
+}
+
+.analytics-card:last-child {
+    max-height: none;
+}
+
+.metrics-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.metric-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--bg-tertiary);
+    border-radius: 0.5rem;
+}
+
+.metric-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.metric-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* 地图监控模块样式 */
+.map-container {
+    display: grid;
+    grid-template-columns: 280px 1fr 280px;
+    grid-template-rows: 1fr auto;
+    gap: 1rem;
+    height: calc(100vh - 120px);
+    position: relative;
+    overflow: hidden;
+}
+
+/* 多机协同控制样式 */
+.formation-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.formation-controls label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.formation-select {
+    padding: 0.5rem;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+.collaboration-modes {
+    margin-bottom: 1rem;
+}
+
+.collaboration-modes label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.mode-buttons {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 0.375rem 0.5rem;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 0.25rem;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.mode-btn.active {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.mode-btn:hover:not(.active) {
+    background-color: var(--border-color);
+}
+
+/* 应急响应系统样式 */
+.emergency-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.emergency-levels {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.level-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.level-indicator.level-green {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--success-color);
+}
+
+.level-indicator.level-yellow {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--warning-color);
+}
+
+.level-indicator.level-orange {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--error-color);
+}
+
+.level-indicator.level-red {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: var(--error-color);
+}
+
+.emergency-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.emergency-btn {
+    padding: 0.5rem;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.emergency-btn.level-2 {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+.emergency-btn.level-3 {
+    background-color: #ff7675;
+    color: white;
+}
+
+.emergency-btn.level-4 {
+    background-color: var(--error-color);
+    color: white;
+}
+
+.emergency-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.cross-department-status {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.dept-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+/* 指挥效能评估样式 */
+.effectiveness-metrics {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.metric-circle {
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+
+.circle-progress {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: conic-gradient(var(--primary-color) 0deg, var(--primary-color) 308deg, var(--border-color) 308deg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.circle-progress::before {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: var(--bg-card);
+}
+
+.circle-progress .score {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    z-index: 1;
+}
+
+.circle-progress .label {
+    font-size: 0.625rem;
+    color: var(--text-secondary);
+    z-index: 1;
+}
+
+.metrics-breakdown {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.metric-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+}
+
+.metric-name {
+    min-width: 60px;
+    color: var(--text-secondary);
+}
+
+.progress-bar {
+    flex: 1;
+    height: 4px;
+    background-color: var(--border-color);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: var(--primary-color);
+    transition: width var(--transition-slow);
+}
+
+.metric-value {
+    min-width: 30px;
+    text-align: right;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.action-btn.emergency {
+    background-color: var(--error-color);
+    color: white;
+    border-color: var(--error-color);
+}
+
+.action-btn.emergency:hover {
+    background-color: #dc2626;
+    border-color: #dc2626;
+}
+
+.map-main {
+    grid-column: 2;
+    grid-row: 1;
+    border-radius: 0.75rem;
+    background-color: var(--bg-tertiary);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    min-height: 400px;
+}
+
+.map-sidebar {
+    grid-column: 1;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    overflow-y: auto;
+}
+
+.map-info-panel {
+    grid-column: 3;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    overflow-y: auto;
+}
+
+.map-status-bar {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background-color: var(--bg-card);
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.control-panel {
+    background-color: var(--bg-card);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+}
+
+.control-panel h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.control-panel h3::before {
+    content: '';
+    width: 3px;
+    height: 16px;
+    background-color: var(--primary-color);
+    border-radius: 2px;
+}
+
+.drone-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.drone-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border: 1px solid transparent;
+}
+
+.drone-item:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.drone-item.active {
+    background-color: rgba(37, 99, 235, 0.1);
+    border-color: var(--primary-color);
+}
+
+.drone-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+    font-size: 0.875rem;
+}
+
+.drone-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.drone-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.drone-status {
+    font-size: 0.75rem;
+    padding: 0.125rem 0.375rem;
+    border-radius: 9999px;
+    margin-top: 0.125rem;
+    width: fit-content;
+}
+
+.drone-status.online {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--success-color);
+}
+
+.drone-status.mission {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--warning-color);
+}
+
+.drone-battery {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.battery-bar {
+    width: 40px;
+    height: 4px;
+    background-color: var(--border-color);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.battery-fill {
+    height: 100%;
+    background-color: var(--success-color);
+    transition: width var(--transition-fast);
+}
+
+.mission-overview {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.mission-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.quick-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    padding: 0.5rem;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.action-btn:hover {
+    background-color: var(--border-color);
+}
+
+.layer-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.layer-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    transition: color var(--transition-fast);
+}
+
+.layer-item:hover {
+    color: var(--text-primary);
+}
+
+.layer-item input[type="checkbox"] {
+    margin: 0;
+}
+
+.info-card {
+    background-color: var(--bg-card);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+}
+
+.info-card h4 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.situation-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.stat-item strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.weather-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.weather-main {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.weather-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.quick-missions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.mission-btn {
+    padding: 0.5rem;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    color: var(--text-primary);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.mission-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.status-left, .status-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.connection-status {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.connection-status .online {
+    color: var(--success-color);
+    font-size: 0.5rem;
+}
+
+.map-controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* 响应式地图布局 */
+@media (max-width: 1400px) {
+    .map-container {
+        grid-template-columns: 250px 1fr 250px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .map-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto auto;
+    }
+    
+    .map-main {
+        grid-column: 1;
+        grid-row: 2;
+        min-height: 500px;
+    }
+    
+    .map-sidebar {
+        grid-column: 1;
+        grid-row: 1;
+        flex-direction: row;
+        overflow-x: auto;
+        gap: 0.5rem;
+    }
+    
+    .map-info-panel {
+        grid-column: 1;
+        grid-row: 3;
+        flex-direction: row;
+        overflow-x: auto;
+        gap: 0.5rem;
+    }
+    
+    .control-panel {
+        min-width: 250px;
+        flex-shrink: 0;
+    }
+    
+    .info-card {
+        min-width: 200px;
+        flex-shrink: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .map-container {
+        height: calc(100vh - 100px);
+        gap: 0.5rem;
+    }
+    
+    .map-sidebar, .map-info-panel {
+        flex-direction: column;
+    }
+    
+    .control-panel, .info-card {
+        min-width: auto;
+    }
+    
+    .map-status-bar {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: stretch;
+    }
+    
+    .status-left, .status-right {
+        justify-content: space-between;
+    }
+}
+
+/* 地图标记样式 */
+.map-marker {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+}
+
+.drone-marker {
+    width: 24px;
+    height: 24px;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.75rem;
+    animation: pulse 2s infinite;
+}
+
+.drone-marker.offline {
+    background-color: var(--text-muted);
+    animation: none;
+}
+
+.drone-marker.warning {
+    background-color: var(--warning-color);
+    animation: pulse 1s infinite;
+}
+
+.drone-marker.error {
+    background-color: var(--error-color);
+    animation: pulse 0.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.1); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+/* 地图覆盖物样式 */
+.map-overlay {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background-color: var(--bg-card);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+    z-index: 1000;
+}
+
+.map-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+/* 告警中心图表样式 */
+.alerts-analytics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+    width: 100%;
+}
+
+.alerts-analytics .analytics-card {
+    background-color: var(--bg-card);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    min-height: 350px;
+    max-height: 450px;
+}
+
+.alerts-analytics .analytics-card canvas {
+    width: 100% !important;
+    height: 250px !important;
+    flex: 1;
+    min-height: 200px;
+}
+
+.correlation-analysis {
+    background-color: var(--bg-card);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    box-shadow: var(--shadow-md);
+}
+
+.correlation-chart {
+    position: relative;
+    height: 250px;
+    margin-top: 1rem;
+}
+
+.correlation-chart canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* 图表容器确保可见 */
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+    background-color: var(--bg-tertiary);
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.chart-container canvas {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 250px;
+    max-height: 300px;
+}
+
+#alerts-trend-chart,
+#alerts-type-chart,
+#correlation-chart {
+    display: block !important;
+    visibility: visible !important;
+    min-height: 250px;
+    height: 250px !important;
+    max-height: 300px;
+    background-color: var(--bg-tertiary);
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+    width: 100% !important;
+}
+
+.chart-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.chart-loading::before {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 0.5rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.chart-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--error-color);
+    font-size: 0.875rem;
+    text-align: center;
+    padding: 1rem;
+}
+
+.chart-error i {
+    margin-right: 0.5rem;
+    font-size: 1.2rem;
+}
+
+/* 图表容器确保可见 */
+#alerts-trend-chart,
+#alerts-type-chart,
+#correlation-chart {
+    display: block !important;
+    visibility: visible !important;
+    min-height: 250px;
+    height: 250px !important;
+    max-height: 300px;
+    background-color: var(--bg-tertiary);
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+    width: 100% !important;
+}
+
+/* 告警中心图表容器增强样式 */
+.alerts-analytics .analytics-card canvas {
+    width: 100% !important;
+    height: 250px !important;
+    min-height: 250px;
+    max-height: 300px;
+    background-color: var(--bg-tertiary);
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+}
+
+/* 确保图表容器有明确尺寸 */
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+    background-color: var(--bg-tertiary);
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+/* 图表加载状态 */
+.chart-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.chart-loading::before {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+}
+
+/* 告警中心布局 */
+.alerts-dashboard {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    flex: 1;
+    min-height: 0;
+}
+
+.alerts-left-panel,
+.alerts-center-panel,
+.alerts-right-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 0;
+}
+
+.alerts-overview {
+    margin-bottom: 1.5rem;
+}
+
+.alert-stream-container,
+.rules-engine-container,
+.alert-details-container,
+.predictive-alerts,
+.cross-department-alerts {
+    background-color: var(--bg-card);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-height: 400px;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-shrink: 0;
+}
+
+.panel-header h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.alert-stream {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.alert-item {
+    background-color: var(--bg-tertiary);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    border-left: 3px solid var(--warning-color);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.alert-item:hover {
+    background-color: var(--bg-secondary);
+    transform: translateX(2px);
+}
+
+.alert-item.critical {
+    border-left-color: var(--error-color);
+}
+
+.alert-item.warning {
+    border-left-color: var(--warning-color);
+}
+
+.alert-item.info {
+    border-left-color: var(--primary-color);
+}
+
+.alert-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.alert-item-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+.alert-item-time {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.alert-item-content {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.alert-item-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+}
+
+.alert-item-location {
+    color: var(--text-muted);
+}
+
+.alert-item-status {
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.625rem;
+}
+
+.alert-item-status.new {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--error-color);
+}
+
+.alert-item-status.processing {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--warning-color);
+}
+
+.alert-item-status.resolved {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--success-color);
+}
+
+.rules-list,
+.prediction-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    overflow-y: auto;
+    max-height: 300px;
+}
+
+.rule-item,
+.prediction-item {
+    background-color: var(--bg-tertiary);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    border-left: 3px solid var(--primary-color);
+}
+
+.rule-item.active {
+    border-left-color: var(--success-color);
+}
+
+.rule-header,
+.prediction-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.rule-name,
+.prediction-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+.rule-status,
+.prediction-time {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+}
+
+.rule-status.enabled {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--success-color);
+}
+
+.rule-details,
+.prediction-details {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.alert-3d-sandbox {
+    background-color: var(--bg-card);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    min-height: 400px;
+    max-height: 500px;
+}
+
+.sandbox-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-shrink: 0;
+}
+
+.sandbox-header h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.sandbox-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.sandbox-container {
+    flex: 1;
+    position: relative;
+    min-height: 300px;
+}
+
+#alert-3d-canvas {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 300px;
+    border-radius: 0.5rem;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+}
+
+.sandbox-overlay {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background-color: rgba(30, 41, 59, 0.9);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    backdrop-filter: blur(4px);
+    border: 1px solid var(--border-color);
+}
+
+.alert-zones {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+}
+
+.zone {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    min-width: 120px;
+}
+
+.zone.critical-zone {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--error-color);
+}
+
+.zone.warning-zone {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--warning-color);
+}
+
+.zone.normal-zone {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--success-color);
+}
+
+.correlation-analysis {
+    background-color: var(--bg-card);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    min-height: 300px;
+    max-height: 400px;
+}
+
+.correlation-chart {
+    flex: 1;
+    position: relative;
+    min-height: 200px;
+}
+
+#correlation-chart {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 200px;
+    background-color: var(--bg-tertiary);
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.alert-details {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.alert-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.alert-level {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.alert-level.critical {
+    color: var(--error-color);
+}
+
+.alert-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.alert-time,
+.alert-location {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.alert-description {
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    line-height: 1.5;
+    margin: 0.5rem 0;
+}
+
+.alert-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.alert-actions .action-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.alert-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.stream-controls {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.stream-controls .btn-small,
+.sandbox-controls .btn-small {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.stream-controls .btn-small.active,
+.sandbox-controls .btn-small.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.prediction-confidence {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    background-color: var(--bg-tertiary);
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+}
+
+.risk-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.risk-bar {
+    flex: 1;
+    height: 4px;
+    background-color: var(--border-color);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.risk-fill {
+    height: 100%;
+    background-color: var(--error-color);
+    transition: width var(--transition-fast);
+}
+
+.department-status {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.status-indicator {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+}
+
+.status-indicator.online {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--success-color);
+}
+
+.status-indicator.standby {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--warning-color);
+}
+
+.department-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.dept-btn {
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.dept-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.dept-btn.fire-dept:hover {
+    background-color: #ff6b6b;
+    border-color: #ff6b6b;
+}
+
+.dept-btn.police-dept:hover {
+    background-color: #4ecdc4;
+    border-color: #4ecdc4;
+}
+
+.dept-btn.medical-dept:hover {
+    background-color: #45b7d1;
+    border-color: #45b7d1;
+}
+
+.dept-btn.communication-dept:hover {
+    background-color: #96ceb4;
+    border-color: #96ceb4;
+}
+
+.efficiency-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.efficiency-metrics .metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background-color: var(--bg-tertiary);
+    border-radius: 0.5rem;
+}
+
+.efficiency-metrics .metric-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.efficiency-metrics .metric-value {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+    .sidebar {
+        width: 200px;
+    }
+    
+    .missions-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .alerts-dashboard {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .alerts-analytics {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .nav-menu {
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 0.5rem;
+    }
+    
+    .nav-item {
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .drones-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        padding: 0;
+    }
+    
+    .analytics-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .analytics-card {
+        padding: 1rem;
+        max-height: none;
+    }
+    
+    .analytics-card canvas {
+        max-height: 250px;
+        min-height: 180px;
+    }
+    
+    .date-range {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+    
+    .date-range input {
+        max-width: none;
+        width: 100%;
+    }
+    
+    .top-bar {
+        padding: 0 1rem;
+    }
+    
+    .logo-section h1 {
+        font-size: 1rem;
+    }
+    
+    .status-indicators {
+        gap: 0.75rem;
+    }
+    
+    .status-item {
+        font-size: 0.75rem;
+    }
+    
+    .content-area {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .top-bar {
+        flex-direction: column;
+        height: auto;
+        padding: 0.5rem 1rem;
+        gap: 0.5rem;
+    }
+    
+    .logo-section {
+        margin-bottom: 0.5rem;
+    }
+    
+    .status-indicators {
+        justify-content: center;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .dashboard-grid {
+        gap: 1rem;
+    }
+    
+    .missions-container {
+        gap: 1rem;
+    }
+    
+    .drone-card {
+        padding: 1rem;
+    }
+    
+    .drone-image {
+        height: 80px;
+    }
+    
+    .drone-image i {
+        font-size: 2rem;
+    }
+    
+    .drone-header h4 {
+        font-size: 1rem;
+    }
+    
+    .drones-grid {
+        gap: 0.5rem;
+    }
+    
+    .analytics-grid {
+        gap: 0.75rem;
+    }
+    
+    .analytics-card {
+        padding: 0.75rem;
+    }
+    
+    .analytics-card canvas {
+        max-height: 200px;
+        min-height: 150px;
+    }
+    
+    .date-range {
+        padding: 0.5rem;
+        gap: 0.5rem;
+    }
+    
+    .date-range input {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.8125rem;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* 加载动画 */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid var(--border-color);
+    border-radius: 50%;
+    border-top-color: var(--primary-color);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 工具提示 */
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -60px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* WebSocket状态和通知样式 */
+.alert-notification {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    max-width: 350px;
+    animation: slideIn 0.3s ease-out;
+}
+
+.alert-notification.critical {
+    border-left: 4px solid var(--error-color);
+}
+
+.alert-notification.warning {
+    border-left: 4px solid var(--warning-color);
+}
+
+.alert-notification.info {
+    border-left: 4px solid var(--primary-color);
+}
+
+.alert-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+}
+
+.alert-content i {
+    color: var(--warning-color);
+}
+
+.alert-content .close-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1.2rem;
+    margin-left: auto;
+}
+
+.alert-content .close-btn:hover {
+    color: var(--text-primary);
+}
+
+.ws-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.ws-status.connected {
+    color: var(--success-color);
+}
+
+.ws-status.disconnected {
+    color: var(--error-color);
+}
+
+.ws-status.connecting {
+    color: var(--warning-color);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}

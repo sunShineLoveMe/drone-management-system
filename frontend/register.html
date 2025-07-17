@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>无人机管理系统 - 注册</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #0f1218;
+            font-family: 'Roboto', Arial, sans-serif;
+        }
+        
+        .register-container {
+            background-color: #1a1f2a;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .register-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .register-header .logo {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .register-header .logo i {
+            font-size: 2.5rem;
+            color: #4caf50;
+            margin-right: 0.5rem;
+        }
+        
+        .register-header h1 {
+            color: #e0e0e0;
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+        
+        .register-form {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #2a303c;
+            border-radius: 4px;
+            background-color: #2a303c;
+            color: #e0e0e0;
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #4caf50;
+        }
+        
+        .register-button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.75rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .register-button:hover {
+            background-color: #3d8b40;
+        }
+        
+        .register-footer {
+            margin-top: 1.5rem;
+            text-align: center;
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+        
+        .register-footer a {
+            color: #4caf50;
+            text-decoration: none;
+        }
+        
+        .register-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .error-message {
+            background-color: rgba(244, 67, 54, 0.1);
+            border: 1px solid #f44336;
+            color: #f44336;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+        
+        .success-message {
+            background-color: rgba(76, 175, 80, 0.1);
+            border: 1px solid #4caf50;
+            color: #4caf50;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-header">
+            <div class="logo">
+                <i class="fas fa-helicopter"></i>
+                <h1>无人机管理系统</h1>
+            </div>
+        </div>
+        
+        <div class="error-message" id="error-message"></div>
+        <div class="success-message" id="success-message"></div>
+        
+        <form class="register-form" id="register-form">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">邮箱</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="confirm-password">确认密码</label>
+                <input type="password" id="confirm-password" name="confirm-password" required>
+            </div>
+            
+            <button type="submit" class="register-button">注册</button>
+        </form>
+        
+        <div class="register-footer">
+            <p>已有账号？ <a href="login.html">登录</a></p>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const registerForm = document.getElementById('register-form');
+            const errorMessage = document.getElementById('error-message');
+            const successMessage = document.getElementById('success-message');
+            
+            registerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                // 直接跳转到登录页面，无需验证
+                window.location.href = 'login.html';
+            });
+        });
+    </script>
+</body>
+</html>

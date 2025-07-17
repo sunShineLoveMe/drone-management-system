@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>无人机管理系统 - 指挥中心</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- 顶部导航栏 -->
+        <header class="top-bar">
+            <div class="logo-section">
+                <i class="fas fa-drone"></i>
+                <h1>无人机指挥调度中心</h1>
+            </div>
+            <div class="status-indicators">
+                <div class="status-item">
+                    <span class="status-dot online"></span>
+                    <span>在线: <span id="online-count">24</span></span>
+                </div>
+                <div class="status-item">
+                    <span class="status-dot warning"></span>
+                    <span>任务中: <span id="mission-count">8</span></span>
+                </div>
+                <div class="status-item">
+                    <span class="status-dot error"></span>
+                    <span>告警: <span id="alert-count">3</span></span>
+                </div>
+            </div>
+            <div class="user-section">
+                <div class="ws-status" id="ws-status">
+                    <i class="fas fa-circle" id="ws-indicator"></i>
+                    <span id="ws-text">连接中...</span>
+                </div>
+                <i class="fas fa-bell notification-icon" id="notification-bell"></i>
+                <div class="user-profile">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiMzQjgyRjYiLz4KPHRleHQgeD0iMjAiIHk9IjI1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSIxNiIgZm9udC1mYW1pbHk9IkFyaWFsIj5BPC90ZXh0Pgo8L3N2Zz4K" alt="用户头像">
+                    <span>管理员</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- 主要内容区域 -->
+        <main class="main-content">
+            <!-- 左侧侧边栏 -->
+            <aside class="sidebar">
+                <nav class="nav-menu">
+                    <a href="#dashboard" class="nav-item active" data-section="dashboard">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>总览</span>
+                    </a>
+                    <a href="#missions" class="nav-item" data-section="missions">
+                        <i class="fas fa-tasks"></i>
+                        <span>任务规划</span>
+                    </a>
+                    <a href="#drones" class="nav-item" data-section="drones">
+                        <i class="fas fa-drone"></i>
+                        <span>设备管理</span>
+                    </a>
+                    <a href="#analytics" class="nav-item" data-section="analytics">
+                        <i class="fas fa-chart-line"></i>
+                        <span>数据分析</span>
+                    </a>
+                    <a href="#map" class="nav-item" data-section="map">
+                        <i class="fas fa-map"></i>
+                        <span>地图监控</span>
+                    </a>
+                    <a href="#alerts" class="nav-item" data-section="alerts">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>告警中心</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- 主内容区 -->
+            <div class="content-area">
+                <!-- Dashboard总览 -->
+                <section id="dashboard-section" class="content-section active">
+                    <div class="section-header">
+                        <h2>系统总览</h2>
+                        <button class="refresh-btn" onclick="refreshDashboard()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon blue">
+                                <i class="fas fa-drone"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="total-drones">32</h3>
+                                <p>无人机总数</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green">
+                                <i class="fas fa-play-circle"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="active-missions">8</h3>
+                                <p>进行中任务</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="avg-response-time">45s</h3>
+                                <p>平均响应时间</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon red">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="critical-alerts">3</h3>
+                                <p>紧急告警</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="dashboard-card">
+                            <h3>实时地图</h3>
+                            <div id="mini-map" class="mini-map"></div>
+                        </div>
+                        <div class="dashboard-card">
+                            <h3>任务状态</h3>
+                            <canvas id="mission-chart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 设备管理模块 -->
+                <section id="drones-section" class="content-section">
+                    <div class="section-header">
+                        <h2>设备管理中心</h2>
+                        <div class="filter-controls">
+                            <select class="filter-select" id="drone-status-filter">
+                                <option value="all">全部状态</option>
+                                <option value="online">在线</option>
+                                <option value="offline">离线</option>
+                                <option value="mission">任务中</option>
+                                <option value="maintenance">维护中</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="drones-grid" id="drones-grid">
+                        <!-- 7个设备将通过JavaScript动态渲染 -->
+                    </div>
+                </section>
+
+                <!-- 其他模块保持不变... -->
+                <!-- 任务规划、数据分析、地图监控、告警中心模块 -->
+                <!-- 这里省略其他模块的代码，保持原有结构 -->
+
+            </div>
+        </main>
+
+        <!-- 设备控制模态框 -->
+        <div id="drone-control-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-gamepad"></i> 设备控制面板</h3>
+                    <span class="close" onclick="closeDroneControlModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="drone-info-panel">
+                        <div class="info-header">
+                            <h4 id="control-drone-name">DJI-001</h4>
+                            <span id="control-drone-status" class="status-badge online">在线</span>
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <label>当前电量:</label>
+                                <span id="control-battery">85%</span>
+                            </div>
+                            <div class="info-item">
+                                <label>信号强度:</label>
+                                <span id="control-signal">95%</span>
+                            </div>
+                            <div class="info-item">
+                                <label>当前位置:</label>
+                                <span id="control-position">园区A区</span>
+                            </div>
+                            <div class="info-item">
+                                <label>飞行高度:</label>
+                                <span id="control-altitude">120米</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-panel">
+                        <h4>基本控制</h4>
+                        <div class="control-grid">
+                            <button class="control-btn takeoff" onclick="sendDroneCommand('takeoff')">
+                                <i class="fas fa-plane-departure"></i>
+                                起飞
+                            </button>
+                            <button class="control-btn land" onclick="sendDroneCommand('land')">
+                                <i class="fas fa-plane-arrival"></i>
+                                降落
+                            </button>
+                            <button class="control-btn return" onclick="sendDroneCommand('return')">
+                                <i class="fas fa-home"></i>
+                                返航
+                            </button>
+                            <button class="control-btn emergency" onclick="sendDroneCommand('emergency')">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                紧急停止
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="control-panel">
+                        <h4>飞行控制</h4>
+                        <div class="joystick-container">
+                            <div class="joystick-area">
+                                <div class="joystick" id="movement-joystick">
+                                    <div class="joystick-knob"></div>
+                                </div>
+                                <label>方向控制</label>
+                            </div>
+                            <div class="joystick-area">
+                                <div class="joystick" id="camera-joystick">
+                                    <div class="joystick-knob"></div>
+                                </div>
+                                <label>云台控制</label>
+                            </div>
+                        </div>
+                        <div class="slider-controls">
+                            <div class="slider-group">
+                                <label>飞行速度</label>
+                                <input type="range" id="speed-slider" min="0" max="100" value="50" class="slider">
+                                <span id="speed-value">50%</span>
+                            </div>
+                            <div class="slider-group">
+                                <label>飞行高度</label>
+                                <input type="range" id="altitude-slider" min="10" max="500" value="120" class="slider">
+                                <span id="altitude-value">120m</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-panel">
+                        <h4>预设动作</h4>
+                        <div class="preset-actions">
+                            <button class="preset-btn" onclick="sendPresetCommand('hover')">悬停</button>
+                            <button class="preset-btn" onclick="sendPresetCommand('circle')">环绕</button>
+                            <button class="preset-btn" onclick="sendPresetCommand('patrol')">巡逻</button>
+                            <button class="preset-btn" onclick="sendPresetCommand('follow')">跟随</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 设备详情模态框 -->
+        <div id="drone-details-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-info-circle"></i> 设备详细信息</h3>
+                    <span class="close" onclick="closeDroneDetailsModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="details-grid">
+                        <div class="detail-section">
+                            <h4>基本信息</h4>
+                            <div class="detail-row">
+                                <span class="label">设备编号:</span>
+                                <span id="detail-id">DJI-001</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">设备名称:</span>
+                                <span id="detail-name">巡检先锋-001</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">设备型号:</span>
+                                <span id="detail-model">Mavic 3 Enterprise</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">当前状态:</span>
+                                <span id="detail-status" class="status-badge online">在线</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">最后更新:</span>
+                                <span id="detail-update">2分钟前</span>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h4>实时数据</h4>
+                            <div class="data-grid">
+                                <div class="data-card">
+                                    <div class="data-icon battery">
+                                        <i class="fas fa-battery-three-quarters"></i>
+                                    </div>
+                                    <div class="data-content">
+                                        <span class="data-value" id="detail-battery">85</span>
+                                        <span class="data-unit">%</span>
+                                        <span class="data-label">电量</span>
+                                    </div>
+                                </div>
+                                <div class="data-card">
+                                    <div class="data-icon signal">
+                                        <i class="fas fa-wifi"></i>
+                                    </div>
+                                    <div class="data-content">
+                                        <span class="data-value" id="detail-signal">95</span>
+                                        <span class="data-unit">%</span>
+                                        <span class="data-label">信号</span>
+                                    </div>
+                                </div>
+                                <div class="data-card">
+                                    <div class="data-icon altitude">
+                                        <i class="fas fa-arrows-alt-v"></i>
+                                    </div>
+                                    <div class="data-content">
+                                        <span class="data-value" id="detail-altitude">120</span>
+                                        <span class="data-unit">m</span>
+                                        <span class="data-label">高度</span>
+                                    </div>
+                                </div>
+                                <div class="data-card">
+                                    <div class="data-icon speed">
+                                        <i class="fas fa-tachometer-alt"></i>
+                                    </div>
+                                    <div class="data-content">
+                                        <span class="data-value" id="detail-speed">12.5</span>
+                                        <span class="data-unit">m/s</span>
+                                        <span class="data-label">速度</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h4>设备规格</h4>
+                            <div class="detail-row">
+                                <span class="label">摄像头:</span>
+                                <span id="detail-camera">4K广角</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">云台:</span>
+                                <span id="detail-gimbal">3轴稳定</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">存储:</span>
+                                <span id="detail-storage">64GB/128GB</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">温度:</span>
+                                <span id="detail-temperature">25°C</span>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h4>任务信息</h4>
+                            <div class="detail-row">
+                                <span class="label">当前任务:</span>
+                                <span id="detail-mission">日常巡检</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">任务进度:</span>
+                                <span id="detail-progress">45%</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">当前位置:</span>
+                                <span id="detail-location">园区A区-北段</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">预计完成时间:</span>
+                                <span id="detail-eta">14:45</span>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h4>历史数据</h4>
+                            <div class="chart-container">
+                                <canvas id="detail-history-chart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-actions">
+                        <button class="primary-btn" onclick="openDroneControlModal(currentDroneId)">
+                            <i class="fas fa-gamepad"></i>
+                            控制设备
+                        </button>
+                        <button class="secondary-btn" onclick="refreshDroneData()">
+                            <i class="fas fa-sync-alt"></i>
+                            刷新数据
+                        </button>
+                        <button class="secondary-btn" onclick="exportDroneData()">
+                            <i class="fas fa-download"></i>
+                            导出数据
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框样式 -->
+    <style>
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .modal.show {
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: var(--bg-card);
+            margin: 2% auto;
+            padding: 0;
+            border-radius: 0.75rem;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-secondary);
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .close {
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color var(--transition-fast);
+        }
+
+        .close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            max-height: calc(90vh - 100px);
+            overflow-y: auto;
+        }
+
+        /* 控制面板样式 */
+        .control-panel {
+            background-color: var(--bg-tertiary);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .control-panel h4 {
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .control-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            background-color: var(--bg-card);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            font-size: 0.875rem;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .control-btn.takeoff {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .control-btn.land {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .control-btn.return {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .control-btn.emergency {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        .control-btn i {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* 摇杆样式 */
+        .joystick-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 1rem 0;
+        }
+
+        .joystick-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .joystick {
+            width: 120px;
+            height: 120px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            position: relative;
+            cursor: grab;
+            margin-bottom: 0.5rem;
+        }
+
+        .joystick:active {
+            cursor: grabbing;
+        }
+
+        .joystick-knob {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40px;
+            height: 40px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all var(--transition-fast);
+        }
+
+        /* 滑块样式 */
+        .slider-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .slider-group label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--border-color);
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+        }
+
+        /* 预设动作按钮 */
+        .preset-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .preset-btn {
+            padding: 0.5rem 1rem;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            font-size: 0.875rem;
+        }
+
+        .preset-btn:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        /* 详情页面样式 */
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .detail-section {
+            background-color: var(--bg-tertiary);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+        }
+
+        .detail-section h4 {
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-row .label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .detail-row span:last-child {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* 数据卡片样式 */
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .data-card {
+            background-color: var(--bg-card);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .data-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .data-icon.battery {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .data-icon.signal {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--primary-color);
+        }
+
+        .data-icon.altitude {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+
+        .data-icon.speed {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--error-color);
+        }
+
+        .data-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .data-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .data-unit {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .data-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* 详情操作按钮 */
+        .detail-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* 动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(-50px) scale(0.9); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                margin: 5% auto;
+            }
+
+            .control-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .joystick-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .slider-controls {
+                grid-template-columns: 1fr;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+
+    <script src="app.js"></script>
+</body>
+</html>
