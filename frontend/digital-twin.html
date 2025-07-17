@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实时数字孪生沙盘 - 无人机管理系统</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        .digital-twin-container {
+            display: grid;
+            grid-template-columns: 350px 1fr 300px;
+            grid-template-rows: 60px 1fr 250px;
+            height: 100vh;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: var(--bg-primary);
+        }
+
+        .twin-header {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .twin-main {
+            grid-column: 2;
+            position: relative;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .twin-sidebar {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            overflow-y: auto;
+        }
+
+        .twin-controls {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .twin-status {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .twin-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            text-align: center;
+        }
+
+        .twin-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .twin-desc {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .sync-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .sync-pulse {
+            width: 8px;
+            height: 8px;
+            background: var(--success-color);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .twin-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+
+        .twin-overlay {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            backdrop-filter: blur(10px);
+            min-width: 200px;
+        }
+
+        .twin-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .twin-metric {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .twin-metric-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .twin-metric-label {
+            font-size: 0.625rem;
+            color: var(--text-secondary);
+        }
+
+        .twin-drone-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .twin-drone-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .twin-drone-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .twin-controls-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            padding: 1rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .control-slider {
+            width: 100%;
+            height: 4px;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .control-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .scenario-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .scenario-btn {
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            font-size: 0.875rem;
+        }
+
+        .scenario-btn:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .scenario-btn.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .data-stream {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .stream-item {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stream-item:last-child {
+            border-bottom: none;
+        }
+
+        .performance-chart {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            padding: 1rem;
+            height: 100px;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 1200px) {
+            .digital-twin-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 60px 1fr auto auto;
+            }
+
+            .twin-sidebar {
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="digital-twin-container">
+        <!-- 头部标题栏 -->
+        <div class="twin-header">
+            <div class="header-left">
+                <h1><i class="fas fa-cube"></i> 实时数字孪生沙盘</h1>
+                <div class="sync-indicator">
+                    <div class="sync-pulse"></div>
+                    <span>实时同步</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="twin-status">
+                    <div class="twin-card">
+                        <div class="twin-value" id="sync-latency">124ms</div>
+                        <div class="twin-desc">同步延迟</div>
+                    </div>
+                    <div class="twin-card">
+                        <div class="twin-value" id="data-accuracy">99.7%</div>
+                        <div class="twin-desc">数据精度</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 左侧控制面板 -->
+        <div class="twin-sidebar">
+            <div class="twin-controls">
+                <div class="layer-title">
+                    <i class="fas fa-sliders-h"></i>
+                    沙盘控制
+                </div>
+                
+                <div class="control-group">
+                    <label>时间流速</label>
+                    <input type="range" class="control-slider" id="time-speed" min="0.1" max="5" value="1" step="0.1">
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); text-align: right;">1.0x</div>
+                </div>
+
+                <div class="control-group">
+                    <label>视角高度</label>
+                    <input type="range" class="control-slider" id="camera-height" min="10" max="100" value="50">
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); text-align: right;">50m</div>
+                </div>
+
+                <div class="control-group">
+                    <label>显示层</label>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <label style="font-size: 0.75rem;">
+                            <input type="checkbox" checked> 无人机
+                        </label>
+                        <label style="font-size: 0.75rem;">
+                            <input type="checkbox" checked> 轨迹
+                        </label>
+                        <label style="font-size: 0.75rem;">
+                            <input type="checkbox"> 热力图
+                        </label>
+                        <label style="font-size: 0.75rem;">
+                            <input type="checkbox"> 风速
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="twin-controls">
+                <div class="layer-title">
+                    <i class="fas fa-globe"></i>
+                    场景预设
+                </div>
+                <div class="scenario-selector">
+                    <div class="scenario-btn active" data-scenario="urban">城市巡检</div>
+                    <div class="scenario-btn" data-scenario="agriculture">农业监测</div>
+                    <div class="scenario-btn" data-scenario="emergency">应急响应</div>
+                    <div class="scenario-btn" data-scenario="delivery">物流配送</div>
+                </div>
+            </div>
+
+            <div class="twin-controls">
+                <div class="layer-title">
+                    <i class="fas fa-database"></i>
+                    数据流
+                </div>
+                <div class="data-stream" id="data-stream">
+                    <div class="stream-item">[14:32:45] DJI-001 位置更新: (23.5, 45.2, 12.8)</div>
+                    <div class="stream-item">[14:32:44] DJI-002 风速检测: 8.5m/s</div>
+                    <div class="stream-item">[14:32:43] DJI-003 电池状态: 78%</div>
+                    <div class="stream-item">[14:32:42] 任务分配: TASK-005 → DJI-004</div>
+                    <div class="stream-item">[14:32:41] 冲突预警: DJI-001 & DJI-002 距离 12.3m</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主3D沙盘区域 -->
+        <div class="twin-main">
+            <canvas id="twin-canvas" style="width: 100%; height: 100%;"></canvas>
+            
+            <div class="twin-overlay">
+                <div class="layer-title" style="font-size: 1rem; margin-bottom: 0.5rem;">
+                    <i class="fas fa-chart-line"></i>
+                    实时指标
+                </div>
+                <div class="twin-metrics">
+                    <div class="twin-metric">
+                        <div class="twin-metric-value" id="active-objects">47</div>
+                        <div class="twin-metric-label">活跃对象</div>
+                    </div>
+                    <div class="twin-metric">
+                        <div class="twin-metric-value" id="update-rate">60/s</div>
+                        <div class="twin-metric-label">更新频率</div>
+                    </div>
+                    <div class="twin-metric">
+                        <div class="twin-metric-value" id="bandwidth">2.4MB/s</div>
+                        <div class="twin-metric-label">带宽使用</div>
+                    </div>
+                    <div class="twin-metric">
+                        <div class="twin-metric-value" id="prediction">95%</div>
+                        <div class="twin-metric-label">预测精度</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧状态面板 -->
+        <div class="twin-sidebar">
+            <div class="twin-controls">
+                <div class="layer-title">
+                    <i class="fas fa-drone"></i>
+                    无人机状态
+                </div>
+                <div class="twin-drone-list" id="twin-drone-list">
+                    <div class="twin-drone-item">
+                        <div style="display: flex; align-items: center;">
+                            <div class="twin-drone-status" style="background: var(--success-color);"></div>
+                            <span>DJI-001</span>
+                        </div>
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);">85% | 巡逻中</span>
+                    </div>
+                    <div class="twin-drone-item">
+                        <div style="display: flex; align-items: center;">
+                            <div class="twin-drone-status" style="background: var(--warning-color);"></div>
+                            <span>DJI-002</span>
+                        </div>
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);">62% | 任务中</span>
+                    </div>
+                    <div class="twin-drone-item">
+                        <div style="display: flex; align-items: center;">
+                            <div class="twin-drone-status" style="background: var(--error-color);"></div>
+                            <span>DJI-003</span>
+                        </div>
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);">45% | 充电中</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="twin-controls">
+                <div class="layer-title">
+                    <i class="fas fa-chart-area"></i>
+                    性能监控
+                </div>
+                <div class="performance-chart" id="performance-chart">
+                    <canvas style="width: 100%; height: 100%;"></canvas>
+                </div>
+            </div>
+
+            <div class="twin-controls">
+                <div class="layer-title">
+                    <i class="fas fa-cogs"></i>
+                    系统控制
+                </div>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button class="primary-btn" style="flex: 1; padding: 0.5rem; font-size: 0.875rem;" onclick="startSimulation()">
+                        <i class="fas fa-play"></i> 开始模拟
+                    </button>
+                    <button class="control-btn" style="flex: 1; padding: 0.5rem; font-size: 0.875rem;" onclick="pauseSimulation()">
+                        <i class="fas fa-pause"></i> 暂停
+                    </button>
+                    <button class="control-btn" style="flex: 1; padding: 0.5rem; font-size: 0.875rem;" onclick="resetSimulation()">
+                        <i class="fas fa-undo"></i> 重置
+                    </button>
+                </div>
+            </div>
+
+            <div class="twin-controls">
+                <div class="layer-title">
+                    <i class="fas fa-bell"></i>
+                    实时警报
+                </div>
+                <div class="alert-system" id="twin-alerts">
+                    <div class="alert-item">
+                        <div class="alert-icon alert-info">i</div>
+                        <span>沙盘初始化完成</span>
+                    </div>
+                    <div class="alert-item">
+                        <div class="alert-icon alert-warning">!</div>
+                        <span>DJI-003 电量低</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部控制面板 -->
+        <div class="twin-controls" style="grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <span style="color: var(--text-secondary); margin-right: 1rem;">
+                    最后同步: <span id="last-sync">2秒前</span>
+                </span>
+                <span style="color: var(--text-secondary);">
+                    系统状态: <span id="system-mode">实时模式</span>
+                </span>
+            </div>
+            <div>
+                <button class="control-btn" onclick="exportData()">
+                    <i class="fas fa-download"></i> 导出数据
+                </button>
+                <button class="control-btn" onclick="syncExternal()">
+                    <i class="fas fa-sync"></i> 外部同步
+                </button>
+            </div>
+        </div>
+
+        <!-- 加载遮罩 -->
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+
+    <script src="digital-twin.js"></script>
+    <script>
+        function startSimulation() {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0, 0, 0, 0.8); z-index: 10000;
+                display: flex; align-items: center; justify-content: center;
+            `;
+            modal.innerHTML = `
+                <div style="background: var(--bg-card); padding: 2rem; border-radius: 0.5rem; max-width: 300px; text-align: center;">
+                    <i class="fas fa-play-circle" style="color: var(--success-color); font-size: 2rem; margin-bottom: 1rem;"></i>
+                    <h3>开始数字孪生模拟</h3>
+                    <p>正在启动实时沙盘模拟...</p>
+                    <button onclick="this.parentElement.parentElement.remove()" class="primary-btn">确认</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function pauseSimulation() {
+            alert('数字孪生模拟已暂停');
+        }
+
+        function resetSimulation() {
+            if (confirm('确认重置数字孪生沙盘到初始状态？')) {
+                alert('沙盘已重置');
+            }
+        }
+
+        function exportData() {
+            const data = {
+                timestamp: new Date().toISOString(),
+                drones: window.twinSystem?.drones || [],
+                scenarios: window.twinSystem?.scenarios || [],
+                performance: window.twinSystem?.metrics || {}
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `digital-twin-data-${Date.now()}.json`;
+            a.click();
+        }
+
+        function syncExternal() {
+            alert('正在同步外部数据源...');
+        }
+
+        // 页面加载完成后隐藏加载遮罩
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                document.getElementById('loading-overlay').style.display = 'none';
+            }, 2000);
+
+            // 场景切换
+            document.querySelectorAll('.scenario-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    console.log(`切换到场景: ${e.target.dataset.scenario}`);
+                });
+            });
+
+            // 滑块控制
+            document.getElementById('time-speed').addEventListener('input', (e) => {
+                const value = e.target.value;
+                e.target.nextElementSibling.textContent = `${value}x`;
+            });
+
+            document.getElementById('camera-height').addEventListener('input', (e) => {
+                const value = e.target.value;
+                e.target.nextElementSibling.textContent = `${value}m`;
+            });
+        });
+    </script>
+</body>
+</html>

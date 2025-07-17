@@ -50,23 +50,59 @@
             <!-- 左侧侧边栏 -->
             <aside class="sidebar">
                 <nav class="nav-menu">
-                    <a href="#dashboard" class="nav-item active" data-section="dashboard">
-                        <i class="fas fa-tachometer-alt"></i>
-                        <span>总览</span>
-                    </a>
-                    <a href="#missions" class="nav-item" data-section="missions">
-                        <i class="fas fa-tasks"></i>
-                        <span>任务规划</span>
-                    </a>
-                    <a href="#drones" class="nav-item" data-section="drones">
-                        <i class="fas fa-drone"></i>
-                        <span>设备管理</span>
-                    </a>
-                    <a href="#analytics" class="nav-item" data-section="analytics">
-                        <i class="fas fa-chart-line"></i>
-                        <span>数据分析</span>
-                    </a>
-                    <a href="#map" class="nav-item" data-section="map">
+                    <div class="nav-section">
+                        <h3 style="color: var(--text-secondary); font-size: 0.875rem; margin: 1rem 0 0.5rem 1rem;">五星难度功能</h3>
+                        <a href="overview.html" class="nav-item" target="_blank">
+                            <i class="fas fa-star"></i>
+                            <span>功能总览</span>
+                            <i class="fas fa-external-link-alt" style="margin-left: auto; font-size: 0.75rem; opacity: 0.6;"></i>
+                        </a>
+                        <a href="digital-twin.html" class="nav-item" target="_blank">
+                            <i class="fas fa-cube"></i>
+                            <span>数字孪生沙盘</span>
+                            <i class="fas fa-external-link-alt" style="margin-left: auto; font-size: 0.75rem; opacity: 0.6;"></i>
+                        </a>
+                        <a href="command-center.html" class="nav-item" target="_blank">
+                            <i class="fas fa-chess-king"></i>
+                            <span>指挥调度中心</span>
+                            <i class="fas fa-external-link-alt" style="margin-left: auto; font-size: 0.75rem; opacity: 0.6;"></i>
+                        </a>
+                        <a href="scheduler.html" class="nav-item" target="_blank">
+                            <i class="fas fa-users"></i>
+                            <span>分布式调度</span>
+                            <i class="fas fa-external-link-alt" style="margin-left: auto; font-size: 0.75rem; opacity: 0.6;"></i>
+                        </a>
+                        <a href="formation-control.html" class="nav-item" target="_blank">
+                            <i class="fas fa-fighter-jet"></i>
+                            <span>编队控制</span>
+                            <i class="fas fa-external-link-alt" style="margin-left: auto; font-size: 0.75rem; opacity: 0.6;"></i>
+                        </a>
+                        <a href="video-control.html" class="nav-item" target="_blank">
+                            <i class="fas fa-video"></i>
+                            <span>视频延迟控制</span>
+                            <i class="fas fa-external-link-alt" style="margin-left: auto; font-size: 0.75rem; opacity: 0.6;"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="nav-section">
+                        <h3 style="color: var(--text-secondary); font-size: 0.875rem; margin: 1rem 0 0.5rem 1rem;">主面板</h3>
+                        <a href="#dashboard" class="nav-item active" data-section="dashboard">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>总览</span>
+                        </a>
+                        <a href="#missions" class="nav-item" data-section="missions">
+                            <i class="fas fa-tasks"></i>
+                            <span>任务规划</span>
+                        </a>
+                        <a href="#drones" class="nav-item" data-section="drones">
+                            <i class="fas fa-drone"></i>
+                            <span>设备管理</span>
+                        </a>
+                        <a href="#analytics" class="nav-item" data-section="analytics">
+                            <i class="fas fa-chart-line"></i>
+                            <span>数据分析</span>
+                        </a>
+                        <a href="#map" class="nav-item" data-section="map">
                         <i class="fas fa-map"></i>
                         <span>地图监控</span>
                     </a>
@@ -159,9 +195,253 @@
                     </div>
                 </section>
 
-                <!-- 其他模块保持不变... -->
-                <!-- 任务规划、数据分析、地图监控、告警中心模块 -->
-                <!-- 这里省略其他模块的代码，保持原有结构 -->
+                <!-- 任务规划模块 -->
+                <section id="missions-section" class="content-section">
+                    <div class="section-header">
+                        <h2>任务规划中心</h2>
+                        <button class="primary-btn" onclick="createNewMission()">
+                            <i class="fas fa-plus"></i>
+                            新建任务
+                        </button>
+                    </div>
+                    
+                    <div class="dashboard-grid">
+                        <div class="dashboard-card">
+                            <h3>任务概览</h3>
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <h3>8</h3>
+                                    <p>进行中任务</p>
+                                </div>
+                                <div class="stat-card">
+                                    <h3>12</h3>
+                                    <p>待执行</p>
+                                </div>
+                                <div class="stat-card">
+                                    <h3>45</h3>
+                                    <p>今日完成</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dashboard-card">
+                            <h3>任务列表</h3>
+                            <div id="missions-list" class="missions-list">
+                                <div class="mission-item">
+                                    <h4>园区巡检 - A区域</h4>
+                                    <p>执行日常安全巡检任务</p>
+                                    <div class="mission-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 45%"></div>
+                                        </div>
+                                        <span>45%</span>
+                                    </div>
+                                </div>
+                                <div class="mission-item">
+                                    <h4>应急搜索 - 北区</h4>
+                                    <p>搜索失踪人员</p>
+                                    <div class="mission-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 0%"></div>
+                                        </div>
+                                        <span>待执行</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 数据分析模块 -->
+                <section id="analytics-section" class="content-section">
+                    <div class="section-header">
+                        <h2>数据分析中心</h2>
+                        <button class="primary-btn" onclick="updateAnalytics()">
+                            <i class="fas fa-sync-alt"></i>
+                            更新数据
+                        </button>
+                    </div>
+                    
+                    <div class="dashboard-grid">
+                        <div class="dashboard-card">
+                            <h3>任务趋势</h3>
+                            <canvas id="trend-chart" width="400" height="200"></canvas>
+                        </div>
+                        <div class="dashboard-card">
+                            <h3>设备利用率</h3>
+                            <canvas id="utilization-chart" width="400" height="200"></canvas>
+                        </div>
+                        <div class="dashboard-card">
+                            <h3>关键指标</h3>
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <h3>96.8%</h3>
+                                    <p>任务成功率</p>
+                                </div>
+                                <div class="stat-card">
+                                    <h3>28秒</h3>
+                                    <p>平均响应</p>
+                                </div>
+                                <div class="stat-card">
+                                    <h3>2.3%</h3>
+                                    <p>故障率</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 地图监控模块 -->
+                <section id="map-section" class="content-section">
+                    <div class="section-header">
+                        <h2>地图监控中心</h2>
+                        <button class="primary-btn" onclick="startFormation()">
+                            <i class="fas fa-map"></i>
+                            更新地图
+                        </button>
+                    </div>
+                    
+                    <div class="dashboard-grid">
+                        <div class="dashboard-card" style="grid-column: 1 / -1;">
+                            <h3>实时地图</h3>
+                            <div id="main-map" class="main-map" style="height: 400px; background: #1e293b; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #64748b;">
+                                <i class="fas fa-map-marked-alt" style="font-size: 48px; margin-bottom: 10px;"></i>
+                                <br>
+                                地图加载中...
+                            </div>
+                        </div>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <h3>7</h3>
+                                <p>在线无人机</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>5</h3>
+                                <p>活跃任务</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>2</h3>
+                                <p>当前告警</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 告警中心模块 -->
+                <section id="alerts-section" class="content-section">
+                    <div class="section-header">
+                        <h2>告警中心</h2>
+                        <div class="header-actions">
+                            <div class="alert-controls">
+                                <button class="primary-btn" onclick="createAlertRule()">
+                                    <i class="fas fa-plus"></i>
+                                    新增规则
+                                </button>
+                                <button class="secondary-btn" onclick="exportAlerts()">
+                                    <i class="fas fa-download"></i>
+                                    导出报告
+                                </button>
+                                <button class="secondary-btn" onclick="manageRules()">
+                                    <i class="fas fa-cog"></i>
+                                    规则管理
+                                </button>
+                                <button class="secondary-btn" onclick="toggle3DView()">
+                                    <i class="fas fa-cube"></i>
+                                    3D视图
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alerts-dashboard">
+                        <div class="alerts-stats">
+                            <div class="alert-stat-card critical">
+                                <div class="stat-icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h3 id="critical-alerts-count">3</h3>
+                                    <p>紧急告警</p>
+                                </div>
+                            </div>
+                            <div class="alert-stat-card warning">
+                                <div class="stat-icon">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h3 id="warning-alerts-count">8</h3>
+                                    <p>警告告警</p>
+                                </div>
+                            </div>
+                            <div class="alert-stat-card info">
+                                <div class="stat-icon">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h3 id="predictive-alerts-count">15</h3>
+                                    <p>预测告警</p>
+                                </div>
+                            </div>
+                            <div class="alert-stat-card resolved">
+                                <div class="stat-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h3 id="resolved-alerts-count">42</h3>
+                                    <p>已处理</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alerts-layout">
+                            <div class="alerts-main">
+                                <div class="alerts-tabs">
+                                    <button class="tab-btn active" data-tab="realtime">实时告警</button>
+                                    <button class="tab-btn" data-tab="predictions">预测告警</button>
+                                    <button class="tab-btn" data-tab="rules">规则管理</button>
+                                </div>
+
+                                <div class="tab-content">
+                                    <div id="realtime-alerts" class="tab-pane active">
+                                        <div class="alert-stream" id="alert-stream">
+                                            <!-- 告警流将通过JavaScript动态渲染 -->
+                                        </div>
+                                    </div>
+
+                                    <div id="predictive-alerts" class="tab-pane">
+                                        <div class="prediction-list" id="prediction-list">
+                                            <!-- 预测告警将通过JavaScript动态渲染 -->
+                                        </div>
+                                    </div>
+
+                                    <div id="rules-management" class="tab-pane">
+                                        <div class="rules-list" id="rules-list">
+                                            <!-- 规则列表将通过JavaScript动态渲染 -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="alerts-sidebar">
+                                <div class="alert-details" id="alert-details">
+                                    <div style="text-align: center; color: #64748B; padding: 2rem;">
+                                        选择一个告警查看详情
+                                    </div>
+                                </div>
+
+                                <div class="alerts-charts">
+                                    <div class="chart-card">
+                                        <h4>告警趋势</h4>
+                                        <canvas id="alerts-trend-chart" width="300" height="150"></canvas>
+                                    </div>
+                                    <div class="chart-card">
+                                        <h4>告警类型分布</h4>
+                                        <canvas id="alerts-type-chart" width="300" height="150"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
             </div>
         </main>
@@ -816,6 +1096,6 @@
         }
     </style>
 
-    <script src="app.js"></script>
+    <script src="app-lite.js"></script>
 </body>
 </html>

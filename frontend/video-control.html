@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>毫秒级视频控制 - 无人机管理系统</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .video-control-container {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            grid-template-rows: 60px 1fr 200px;
+            height: 100vh;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-primary);
+        }
+
+        .video-header {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-secondary);
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .video-main {
+            display: grid;
+            grid-template-rows: 1fr 200px;
+            gap: 1rem;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1rem;
+            overflow-y: auto;
+        }
+
+        .video-stream {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .video-display {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(45deg, #1e293b, #334155);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            position: relative;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0.5rem;
+            left: 0.5rem;
+            right: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            z-index: 10;
+        }
+
+        .drone-id {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        .latency-badge {
+            background: rgba(16, 185, 129, 0.8);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .latency-badge.warning {
+            background: rgba(245, 158, 11, 0.8);
+        }
+
+        .latency-badge.critical {
+            background: rgba(239, 68, 68, 0.8);
+        }
+
+        .video-controls {
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .video-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.25rem 0;
+        }
+
+        .control-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            overflow-y: auto;
+        }
+
+        .panel-section {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .panel-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .panel-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .latency-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .latency-slider {
+            width: 100%;
+            height: 4px;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+            appearance: none;
+            outline: none;
+        }
+
+        .latency-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .quality-selector {
+            display: flex;
+            gap: 0.25rem;
+            flex-wrap: wrap;
+        }
+
+        .quality-btn {
+            padding: 0.375rem 0.75rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quality-btn.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .network-status {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-fill.good {
+            background: var(--success-color);
+        }
+
+        .progress-fill.warning {
+            background: var(--warning-color);
+        }
+
+        .progress-fill.critical {
+            background: var(--error-color);
+        }
+
+        .stream-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .stream-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            background: var(--bg-secondary);
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        .stream-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success-color);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+        }
+
+        .metric-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.25rem;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .metric-large {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .emergency-controls {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .emergency-btn {
+            padding: 0.5rem;
+            border: none;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+            min-width: 80px;
+        }
+
+        .emergency-btn.network {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning-color);
+        }
+
+        .emergency-btn.critical {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--error-color);
+        }
+
+        .emergency-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 1200px) {
+            .video-control-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 60px 1fr auto;
+            }
+
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="video-control-container">
+        <!-- 头部标题栏 -->
+        <div class="video-header">
+            <div class="header-left">
+                <h1><i class="fas fa-video"></i> 毫秒级视频控制中心</h1>
+                <span class="status-indicator" style="background: var(--success-color);"></span>
+                <span style="color: var(--text-secondary); font-size: 0.875rem;">WebRTC优化引擎运行中</span>
+            </div>
+            <div class="header-right">
+                <button class="quality-btn active" onclick="switchAllStreams('normal')">标准模式</button>
+                <button class="quality-btn" onclick="switchAllStreams('critical')">紧急模式</button>
+                <button class="quality-btn" onclick="simulateNetworkIssue()">网络测试</button>
+            </div>
+        </div>
+
+        <!-- 主视频区域 -->
+        <div class="video-main">
+            <div class="video-grid" id="video-grid">
+                <!-- 动态生成视频流 -->
+            </div>
+            
+            <div class="dashboard-grid">
+                <div class="metric-card">
+                    <div class="metric-large" id="avg-latency">150ms</div>
+                    <div class="metric-label">平均延迟</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-large" id="total-bitrate">4000kbps</div>
+                    <div class="metric-label">总码率</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-large" id="active-streams">0</div>
+                    <div class="metric-label">活跃流</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-large" id="packet-loss">0%</div>
+                    <div class="metric-label">丢包率</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 控制面板 -->
+        <div class="control-panel">
+            <!-- 延迟控制 -->
+            <div class="panel-section">
+                <div class="panel-title">延迟控制</div>
+                <div class="latency-controls">
+                    <div class="status-bar">
+                        <span>紧急模式: 100ms</span>
+                        <span id="critical-latency">100ms</span>
+                    </div>
+                    <div class="status-bar">
+                        <span>标准模式: 250ms</span>
+                        <span id="normal-latency">250ms</span>
+                    </div>
+                    <div class="status-bar">
+                        <span>监控模式: 500ms</span>
+                        <span id="monitor-latency">500ms</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 质量设置 -->
+            <div class="panel-section">
+                <div class="panel-title">视频质量</div>
+                <div class="quality-selector">
+                    <button class="quality-btn" onclick="setQuality('4k')">4K</button>
+                    <button class="quality-btn active" onclick="setQuality('1080p')">1080p</button>
+                    <button class="quality-btn" onclick="setQuality('720p')">720p</button>
+                    <button class="quality-btn" onclick="setQuality('480p')">480p</button>
+                </div>
+            </div>
+
+            <!-- 网络状态 -->
+            <div class="panel-section">
+                <div class="panel-title">网络状态</div>
+                <div class="network-status">
+                    <div class="status-bar">
+                        <span>带宽利用率</span>
+                        <span id="bandwidth-usage">75%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill good" id="bandwidth-bar" style="width: 75%"></div>
+                    </div>
+                    
+                    <div class="status-bar">
+                        <span>缓冲区健康度</span>
+                        <span id="buffer-health">85%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill good" id="buffer-bar" style="width: 85%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 流列表 -->
+            <div class="panel-section">
+                <div class="panel-title">活跃流</div>
+                <div class="stream-list" id="stream-list">
+                    <div class="stream-item">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div class="stream-status"></div>
+                            <span>DJI-001</span>
+                        </div>
+                        <span style="color: var(--success-color);">145ms</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 紧急控制 -->
+            <div class="panel-section">
+                <div class="panel-title">紧急控制</div>
+                <div class="emergency-controls">
+                    <button class="emergency-btn network" onclick="reduceAllQuality()">
+                        <i class="fas fa-compress"></i> 降低质量
+                    </button>
+                    <button class="emergency-btn critical" onclick="emergencyStopAll()">
+                        <i class="fas fa-stop"></i> 紧急停止
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="low-latency-video.js"></script>
+    <script>
+        let videoSystem;
+        let activeDrones = ['DJI-001', 'DJI-002', 'DJI-003', 'DJI-004'];
+
+        // 初始化视频系统
+        function initVideoSystem() {
+            videoSystem = new LowLatencyVideoSystem();
+            
+            // 启动所有无人机的视频流
+            activeDrones.forEach(droneId => {
+                videoSystem.startStream(droneId, 'normal');
+            });
+
+            renderVideoStreams();
+            startMonitoring();
+        }
+
+        // 渲染视频流
+        function renderVideoStreams() {
+            const grid = document.getElementById('video-grid');
+            grid.innerHTML = activeDrones.map(droneId => `
+                <div class="video-stream">
+                    <div class="video-display">
+                        <div class="video-overlay">
+                            <div class="drone-id">${droneId}</div>
+                            <div class="latency-badge" id="latency-${droneId}">150ms</div>
+                        </div>
+                        <i class="fas fa-video"></i>
+                        <div style="position: absolute; bottom: 1rem; left: 1rem; color: white;">
+                            4K 30fps
+                        </div>
+                    </div>
+                    <div class="video-controls">
+                        <div class="video-stats" id="video-stats-${droneId}"></div>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                            <button class="quality-btn" onclick="optimizeStream('${droneId}', 'critical')">紧急</button>
+                            <button class="quality-btn" onclick="stopStream('${droneId}')">停止</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 开始监控
+        function startMonitoring() {
+            setInterval(() => {
+                updateStats();
+                updateStreamList();
+            }, 500);
+        }
+
+        // 更新统计信息
+        function updateStats() {
+            const status = videoSystem.getAllStreamStatus();
+            const report = videoSystem.getNetworkQualityReport();
+
+            document.getElementById('avg-latency').textContent = `${status.averageLatency}ms`;
+            document.getElementById('total-bitrate').textContent = `${report.adaptiveBitrate}kbps`;
+            document.getElementById('active-streams').textContent = status.totalStreams;
+            document.getElementById('packet-loss').textContent = `${(report.packetLoss * 100).toFixed(1)}%`;
+
+            document.getElementById('bandwidth-usage').textContent = 
+                `${((report.adaptiveBitrate * status.totalStreams) / report.bandwidth * 100).toFixed(0)}%`;
+            document.getElementById('bandwidth-bar').style.width = 
+                `${Math.min(100, (report.adaptiveBitrate * status.totalStreams) / report.bandwidth * 100)}%`;
+
+            document.getElementById('buffer-health').textContent = `${report.quality}%`;
+            document.getElementById('buffer-bar').style.width = `${report.quality}%`;
+
+            // 更新每个流的延迟显示
+            status.streams.forEach(stream => {
+                const latencyElement = document.getElementById(`latency-${stream.id}`);
+                if (latencyElement) {
+                    latencyElement.textContent = `${stream.latency}ms`;
+                    latencyElement.className = `latency-badge ${
+                        stream.latency < 150 ? '' : 
+                        stream.latency < 300 ? 'warning' : 'critical'
+                    }`;
+                }
+
+                videoSystem.renderStreamStats(stream.id, stream);
+            });
+        }
+
+        // 更新流列表
+        function updateStreamList() {
+            const status = videoSystem.getAllStreamStatus();
+            const container = document.getElementById('stream-list');
+            
+            container.innerHTML = status.streams.map(stream => `
+                <div class="stream-item">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div class="stream-status"></div>
+                        <span>${stream.id}</span>
+                    </div>
+                    <span style="color: ${
+                        stream.latency < 200 ? 'var(--success-color)' : 
+                        stream.latency < 400 ? 'var(--warning-color)' : 
+                        'var(--error-color)'
+                    }">${stream.latency}ms</span>
+                </div>
+            `).join('');
+        }
+
+        // 切换所有流模式
+        function switchAllStreams(mode) {
+            const buttons = document.querySelectorAll('.quality-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            activeDrones.forEach(droneId => {
+                videoSystem.optimizeStreamLatency(droneId, videoSystem.latencyTargets[mode]);
+            });
+        }
+
+        // 设置视频质量
+        function setQuality(quality) {
+            const buttons = document.querySelectorAll('.quality-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // 模拟质量切换
+            const bitrates = {
+                '4k': 8000,
+                '1080p': 4000,
+                '720p': 2500,
+                '480p': 1000
+            };
+            
+            videoSystem.adaptiveBitrate = bitrates[quality];
+            videoSystem.resolution = quality === '4k' ? '3840x2160' : 
+                                    quality === '1080p' ? '1920x1080' : 
+                                    quality === '720p' ? '1280x720' : '854x480';
+        }
+
+        // 优化单个流
+        function optimizeStream(droneId, mode) {
+            videoSystem.optimizeStreamLatency(droneId, videoSystem.latencyTargets[mode]);
+            videoSystem.renderStreamStats(droneId, videoSystem.streams.get(droneId));
+        }
+
+        // 停止流
+        function stopStream(droneId) {
+            videoSystem.stopStream(droneId);
+            const index = activeDrones.indexOf(droneId);
+            if (index > -1) {
+                activeDrones.splice(index, 1);
+                renderVideoStreams();
+            }
+        }
+
+        // 降低所有质量
+        function reduceAllQuality() {
+            videoSystem.adaptiveBitrate = Math.max(500, videoSystem.adaptiveBitrate - 1000);
+            videoSystem.frameRate = Math.max(15, videoSystem.frameRate - 5);
+        }
+
+        // 紧急停止所有流
+        function emergencyStopAll() {
+            activeDrones.forEach(droneId => {
+                videoSystem.stopStream(droneId);
+            });
+            activeDrones = [];
+            renderVideoStreams();
+        }
+
+        // 模拟网络故障
+        function simulateNetworkIssue() {
+            const issues = ['packet_loss', 'bandwidth_drop', 'high_latency'];
+            const randomIssue = issues[Math.floor(Math.random() * issues.length)];
+            videoSystem.simulateNetworkIssue(randomIssue);
+            
+            alert(`模拟网络问题: ${randomIssue.replace('_', ' ')}`);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initVideoSystem();
+        });
+    </script>
+</body>
+</html>

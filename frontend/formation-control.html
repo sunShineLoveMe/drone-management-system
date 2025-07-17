@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多机协同编队控制 - 无人机管理系统</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        .formation-container {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            grid-template-rows: 60px 1fr 250px;
+            height: 100vh;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: var(--bg-primary);
+        }
+
+        .formation-header {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .formation-main {
+            position: relative;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .formation-sidebar {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            overflow-y: auto;
+        }
+
+        .formation-controls {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .formation-templates {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .template-btn {
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .template-btn:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            transform: translateY(-1px);
+        }
+
+        .template-btn.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .template-icon {
+            font-size: 1.5rem;
+        }
+
+        .template-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .formation-parameters {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .parameter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .parameter-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .parameter-slider {
+            width: 100%;
+            height: 4px;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .parameter-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .parameter-value {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-align: right;
+        }
+
+        .formation-status {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .status-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            text-align: center;
+        }
+
+        .status-number {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .status-desc {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .drone-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .drone-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .drone-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .drone-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .drone-online {
+            background: var(--success-color);
+        }
+
+        .drone-offline {
+            background: var(--text-muted);
+        }
+
+        .formation-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+            flex: 1;
+            text-align: center;
+        }
+
+        .action-btn:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .action-btn.primary {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .action-btn.danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--error-color);
+            border-color: var(--error-color);
+        }
+
+        .action-btn.danger:hover {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .real-time-metrics {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            backdrop-filter: blur(10px);
+            min-width: 200px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .metric-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .metric-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .metric-label {
+            font-size: 0.625rem;
+            color: var(--text-secondary);
+        }
+
+        .formation-preview {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .coordination-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+        }
+
+        .coordination-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.25rem 0;
+            font-size: 0.875rem;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 1200px) {
+            .formation-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 60px 1fr auto auto;
+            }
+
+            .formation-sidebar {
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="formation-container">
+        <!-- 头部标题栏 -->
+        <div class="formation-header">
+            <div class="header-left">
+                <h1><i class="fas fa-users"></i> 多机协同编队控制</h1>
+                <span class="status-indicator" style="background: var(--success-color);"></span>
+                <span style="color: var(--text-secondary); font-size: 0.875rem;">编队算法运行中</span>
+            </div>
+            <div class="header-right">
+                <div class="formation-status">
+                    <div class="status-card">
+                        <div class="status-number" id="active-formations">2</div>
+                        <div class="status-desc">活跃编队</div>
+                    </div>
+                    <div class="status-card">
+                        <div class="status-number" id="coordination-score">94%</div>
+                        <div class="status-desc">协同效率</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主3D可视化区域 -->
+        <div class="formation-main">
+            <canvas id="formation-canvas" style="width: 100%; height: 100%;"></canvas>
+            
+            <div class="real-time-metrics">
+                <div class="layer-title" style="font-size: 1rem; margin-bottom: 0.5rem;">
+                    <i class="fas fa-chart-line"></i>
+                    实时指标
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <div class="metric-value" id="formation-precision">98.5%</div>
+                        <div class="metric-label">编队精度</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value" id="synchronization">99.2%</div>
+                        <div class="metric-label">同步率</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value" id="response-time">0.8s</div>
+                        <div class="metric-label">响应时间</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value" id="stability">96.7%</div>
+                        <div class="metric-label">稳定性</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 侧边栏控制面板 -->
+        <div class="formation-sidebar">
+            <!-- 编队模板选择 -->
+            <div class="formation-controls">
+                <div class="layer-title" style="font-size: 1rem;">
+                    <i class="fas fa-shapes"></i>
+                    编队模板
+                </div>
+                <div class="formation-templates">
+                    <div class="template-btn active" data-formation="line">
+                        <div class="template-icon">➖</div>
+                        <div class="template-name">横队</div>
+                    </div>
+                    <div class="template-btn" data-formation="column">
+                        <div class="template-icon">⬆️</div>
+                        <div class="template-name">纵队</div>
+                    </div>
+                    <div class="template-btn" data-formation="diamond">
+                        <div class="template-icon">⬟</div>
+                        <div class="template-name">菱形</div>
+                    </div>
+                    <div class="template-btn" data-formation="circle">
+                        <div class="template-icon">⭕</div>
+                        <div class="template-name">圆形</div>
+                    </div>
+                    <div class="template-btn" data-formation="v-shape">
+                        <div class="template-icon">V</div>
+                        <div class="template-name">V字队</div>
+                    </div>
+                    <div class="template-btn" data-formation="echelon">
+                        <div class="template-icon">⟋</div>
+                        <div class="template-name">梯队</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 编队参数控制 -->
+            <div class="formation-controls">
+                <div class="layer-title" style="font-size: 1rem;">
+                    <i class="fas fa-sliders-h"></i>
+                    编队参数
+                </div>
+                <div class="formation-parameters">
+                    <div class="parameter-group">
+                        <div class="parameter-label">间距 (米)</div>
+                        <input type="range" class="parameter-slider" id="spacing-slider" min="5" max="50" value="20">
+                        <div class="parameter-value" id="spacing-value">20米</div>
+                    </div>
+                    <div class="parameter-group">
+                        <div class="parameter-label">高度差 (米)</div>
+                        <input type="range" class="parameter-slider" id="altitude-slider" min="0" max="20" value="5">
+                        <div class="parameter-value" id="altitude-value">5米</div>
+                    </div>
+                    <div class="parameter-group">
+                        <div class="parameter-label">飞行速度 (m/s)</div>
+                        <input type="range" class="parameter-slider" id="speed-slider" min="2" max="15" value="8">
+                        <div class="parameter-value" id="speed-value">8m/s</div>
+                    </div>
+                    <div class="parameter-group">
+                        <div class="parameter-label">同步精度 (%)</div>
+                        <input type="range" class="parameter-slider" id="precision-slider" min="85" max="100" value="98">
+                        <div class="parameter-value" id="precision-value">98%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 无人机列表 -->
+            <div class="formation-controls">
+                <div class="layer-title" style="font-size: 1rem;">
+                    <i class="fas fa-drone"></i>
+                    编队成员
+                </div>
+                <div class="drone-list" id="formation-drones">
+                    <div class="drone-item">
+                        <div class="drone-info">
+                            <div class="drone-status drone-online"></div>
+                            <span>DJI-001</span>
+                        </div>
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);">87%</span>
+                    </div>
+                    <div class="drone-item">
+                        <div class="drone-info">
+                            <div class="drone-status drone-online"></div>
+                            <span>DJI-002</span>
+                        </div>
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);">92%</span>
+                    </div>
+                    <div class="drone-item">
+                        <div class="drone-info">
+                            <div class="drone-status drone-online"></div>
+                            <span>DJI-003</span>
+                        </div>
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);">78%</span>
+                    </div>
+                    <div class="drone-item">
+                        <div class="drone-info">
+                            <div class="drone-status drone-online"></div>
+                            <span>DJI-004</span>
+                        </div>
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);">95%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 编队预览 -->
+            <div class="formation-controls">
+                <div class="layer-title" style="font-size: 1rem;">
+                    <i class="fas fa-eye"></i>
+                    编队预览
+                </div>
+                <div class="formation-preview" id="formation-preview">
+                    选择编队模板查看预览
+                </div>
+            </div>
+
+            <!-- 协同控制 -->
+            <div class="formation-controls">
+                <div class="layer-title" style="font-size: 1rem;">
+                    <i class="fas fa-handshake"></i>
+                    协同控制
+                </div>
+                <div class="formation-actions">
+                    <button class="action-btn primary" onclick="startFormation()">
+                        <i class="fas fa-play"></i>
+                        开始编队
+                    </button>
+                    <button class="action-btn" onclick="pauseFormation()">
+                        <i class="fas fa-pause"></i>
+                        暂停
+                    </button>
+                    <button class="action-btn" onclick="resetFormation()">
+                        <i class="fas fa-undo"></i>
+                        重置
+                    </button>
+                    <button class="action-btn danger" onclick="emergencyFormation()">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        紧急分散
+                    </button>
+                </div>
+            </div>
+
+            <!-- 协调面板 -->
+            <div class="formation-controls">
+                <div class="layer-title" style="font-size: 1rem;">
+                    <i class="fas fa-network-wired"></i>
+                    协调状态
+                </div>
+                <div class="coordination-panel">
+                    <div class="coordination-item">
+                        <span>通信延迟</span>
+                        <span style="color: var(--success-color);">12ms</span>
+                    </div>
+                    <div class="coordination-item">
+                        <span>数据同步</span>
+                        <span style="color: var(--success-color);">99.8%</span>
+                    </div>
+                    <div class="coordination-item">
+                        <span>指令响应</span>
+                        <span style="color: var(--success-color);">0.3s</span>
+                    </div>
+                    <div class="coordination-item">
+                        <span>故障检测</span>
+                        <span style="color: var(--success-color);">无</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 编队控制面板 -->
+        <div class="formation-controls" style="grid-column: 1 / -1;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <span style="color: var(--text-secondary); margin-right: 1rem;">
+                        最后更新: <span id="last-update">2秒前</span>
+                    </span>
+                    <span style="color: var(--text-secondary);">
+                        算法状态: <span id="algorithm-status">运行中</span>
+                    </span>
+                </div>
+                <div>
+                    <button class="action-btn" onclick="saveFormation()">
+                        <i class="fas fa-save"></i>
+                        保存编队
+                    </button>
+                    <button class="action-btn" onclick="loadFormation()">
+                        <i class="fas fa-folder-open"></i>
+                        加载编队
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 加载遮罩 -->
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+
+    <script src="formation-control.js"></script>
+    <script>
+        function startFormation() {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0, 0, 0, 0.8); z-index: 10000;
+                display: flex; align-items: center; justify-content: center;
+            `;
+            modal.innerHTML = `
+                <div style="background: var(--bg-card); padding: 2rem; border-radius: 0.5rem; max-width: 300px; text-align: center;">
+                    <i class="fas fa-play-circle" style="color: var(--success-color); font-size: 2rem; margin-bottom: 1rem;"></i>
+                    <h3>编队启动</h3>
+                    <p>正在启动编队飞行...</p>
+                    <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 0.25rem; margin: 1rem 0;">
+                        <div style="font-size: 0.875rem; margin-bottom: 0.5rem;">
+                            当前编队: 横队
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                            无人机数量: 4架 | 间距: 20米
+                        </div>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="action-btn primary">
+                        确认启动
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function pauseFormation() {
+            alert('编队已暂停');
+        }
+
+        function resetFormation() {
+            if (confirm('确认重置编队到初始状态？')) {
+                alert('编队已重置');
+            }
+        }
+
+        function emergencyFormation() {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(239, 68, 68, 0.1); z-index: 10000;
+                display: flex; align-items: center; justify-content: center;
+            `;
+            modal.innerHTML = `
+                <div style="background: var(--bg-card); padding: 2rem; border-radius: 0.5rem; max-width: 400px;">
+                    <h3 style="color: var(--error-color); margin-bottom: 1rem;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        紧急分散确认
+                    </h3>
+                    <p style="margin-bottom: 1rem;">确认执行紧急分散操作？</p>
+                    <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                        所有无人机将立即分散到安全距离
+                    </p>
+                    <div style="display: flex; gap: 1rem;">
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" 
+                                class="action-btn" style="flex: 1;">取消</button>
+                        <button onclick="executeEmergencyDispersion(); this.parentElement.parentElement.parentElement.remove()" 
+                                class="action-btn danger" style="flex: 1;">确认分散</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function executeEmergencyDispersion() {
+            alert('紧急分散已执行，所有无人机已分散到安全距离');
+        }
+
+        function saveFormation() {
+            alert('编队配置已保存');
+        }
+
+        function loadFormation() {
+            alert('正在加载编队配置...');
+        }
+
+        // 参数滑块事件
+        document.addEventListener('DOMContentLoaded', () => {
+            const sliders = document.querySelectorAll('.parameter-slider');
+            sliders.forEach(slider => {
+                slider.addEventListener('input', (e) => {
+                    const valueDisplay = document.getElementById(e.target.id.replace('slider', 'value'));
+                    if (valueDisplay) {
+                        const value = e.target.value;
+                        const unit = e.target.id.includes('spacing') ? '米' : 
+                                   e.target.id.includes('altitude') ? '米' : 
+                                   e.target.id.includes('speed') ? 'm/s' : '%';
+                        valueDisplay.textContent = value + unit;
+                    }
+                });
+            });
+
+            // 编队模板选择
+            const templateBtns = document.querySelectorAll('.template-btn');
+            templateBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    templateBtns.forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    
+                    const formation = e.target.dataset.formation;
+                    console.log(`选择编队: ${formation}`);
+                });
+            });
+
+            // 隐藏加载遮罩
+            setTimeout(() => {
+                document.getElementById('loading-overlay').style.display = 'none';
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

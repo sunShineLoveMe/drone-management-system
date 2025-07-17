@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>指挥调度中心 - 无人机管理系统</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        .command-center {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            grid-template-rows: 60px 1fr 200px;
+            height: 100vh;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: var(--bg-primary);
+        }
+
+        .command-header {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .strategic-layer {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .tactical-layer {
+            display: grid;
+            grid-template-rows: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .operational-layer {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .layer-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .situation-map {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .command-panels {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .command-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .status-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+            text-align: center;
+        }
+
+        .status-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .status-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .threat-level {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .threat-low {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .threat-medium {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+            border: 1px solid var(--warning-color);
+        }
+
+        .threat-high {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error-color);
+            border: 1px solid var(--error-color);
+        }
+
+        .operator-station {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .operator-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .operator-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .operator-online {
+            background: var(--success-color);
+        }
+
+        .operator-offline {
+            background: var(--text-muted);
+        }
+
+        .alert-system {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .alert-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0;
+            font-size: 0.875rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .alert-item:last-child {
+            border-bottom: none;
+        }
+
+        .alert-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.625rem;
+        }
+
+        .alert-critical {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .alert-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .alert-info {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .mission-timeline {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            height: 120px;
+            overflow-y: auto;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0;
+            font-size: 0.75rem;
+        }
+
+        .timeline-time {
+            color: var(--text-secondary);
+            min-width: 60px;
+        }
+
+        .timeline-event {
+            flex: 1;
+            color: var(--text-primary);
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            padding: 0.375rem 0.75rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .control-btn.emergency {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--error-color);
+            border-color: var(--error-color);
+        }
+
+        .control-btn.emergency:hover {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .weather-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+        }
+
+        .weather-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.25rem 0;
+            font-size: 0.875rem;
+        }
+
+        .weather-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .communication-status {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+        }
+
+        .comm-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.25rem 0;
+        }
+
+        .signal-strength {
+            display: flex;
+            gap: 2px;
+            align-items: end;
+        }
+
+        .signal-bar {
+            width: 3px;
+            background: var(--border-color);
+            border-radius: 1px;
+        }
+
+        .signal-bar.active {
+            background: var(--success-color);
+        }
+
+        .digital-twin-panel {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            min-width: 200px;
+            backdrop-filter: blur(10px);
+        }
+
+        .twin-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .twin-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .twin-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .twin-label {
+            font-size: 0.625rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 1400px) {
+            .command-center {
+                grid-template-columns: 250px 1fr 300px;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .command-center {
+                grid-template-columns: 1fr;
+                grid-template-rows: 60px 200px 1fr 200px 200px;
+            }
+
+            .command-panels {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="command-center">
+        <!-- 战略层 - 总指挥席 -->
+        <div class="strategic-layer">
+            <div class="layer-title">
+                <i class="fas fa-chess-king"></i>
+                战略指挥层
+            </div>
+            
+            <div class="threat-level threat-low">
+                <i class="fas fa-shield-alt"></i>
+                <span>威胁等级: 低</span>
+            </div>
+
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-value" id="total-drones">7</div>
+                    <div class="status-label">总无人机</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value" id="active-missions">5</div>
+                    <div class="status-label">活跃任务</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value" id="coverage-area">85%</div>
+                    <div class="status-label">覆盖区域</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value" id="system-health">98%</div>
+                    <div class="status-label">系统健康</div>
+                </div>
+            </div>
+
+            <div class="weather-panel">
+                <div class="layer-title" style="font-size: 1rem;">
+                    <i class="fas fa-cloud-sun"></i>
+                    环境监控
+                </div>
+                <div class="weather-item">
+                    <span>风速</span>
+                    <span class="weather-value">12.5 m/s</span>
+                </div>
+                <div class="weather-item">
+                    <span>能见度</span>
+                    <span class="weather-value">8.2 km</span>
+                </div>
+                <div class="weather-item">
+                    <span>温度</span>
+                    <span class="weather-value">22°C</span>
+                </div>
+                <div class="weather-item">
+                    <span>湿度</span>
+                    <span class="weather-value">65%</span>
+                </div>
+            </div>
+
+            <div class="communication-status">
+                <div class="layer-title" style="font-size: 1rem;">
+                    <i class="fas fa-wifi"></i>
+                    通信状态
+                </div>
+                <div class="comm-indicator">
+                    <span>卫星链路</span>
+                    <div class="signal-strength">
+                        <div class="signal-bar active" style="height: 8px;"></div>
+                        <div class="signal-bar active" style="height: 12px;"></div>
+                        <div class="signal-bar active" style="height: 16px;"></div>
+                        <div class="signal-bar" style="height: 20px;"></div>
+                    </div>
+                </div>
+                <div class="comm-indicator">
+                    <span>5G网络</span>
+                    <div class="signal-strength">
+                        <div class="signal-bar active" style="height: 8px;"></div>
+                        <div class="signal-bar active" style="height: 12px;"></div>
+                        <div class="signal-bar active" style="height: 16px;"></div>
+                        <div class="signal-bar active" style="height: 20px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-buttons">
+                <button class="control-btn" onclick="toggleFullscreen()">
+                    <i class="fas fa-expand"></i>
+                    全屏模式
+                </button>
+                <button class="control-btn emergency" onclick="emergencyStop()">
+                    <i class="fas fa-stop-circle"></i>
+                    紧急停止
+                </button>
+            </div>
+        </div>
+
+        <!-- 战术层 - 态势感知 -->
+        <div class="tactical-layer">
+            <div class="situation-map" id="situation-map">
+                <div class="digital-twin-panel">
+                    <div class="layer-title" style="font-size: 1rem;">
+                        <i class="fas fa-cube"></i>
+                        数字孪生
+                    </div>
+                    <div class="twin-stats">
+                        <div class="twin-stat">
+                            <div class="twin-value" id="twin-drones">7</div>
+                            <div class="twin-label">实时同步</div>
+                        </div>
+                        <div class="twin-stat">
+                            <div class="twin-value" id="twin-latency">124ms</div>
+                            <div class="twin-label">延迟</div>
+                        </div>
+                        <div class="twin-stat">
+                            <div class="twin-value" id="twin-accuracy">99.7%</div>
+                            <div class="twin-label">精度</div>
+                        </div>
+                        <div class="twin-stat">
+                            <div class="twin-value" id="twin-updates">60/s</div>
+                            <div class="twin-label">更新率</div>
+                        </div>
+                    </div>
+                </div>
+                <canvas id="tactical-canvas" style="width: 100%; height: 100%;"></canvas>
+            </div>
+
+            <div class="command-panels">
+                <div class="command-panel">
+                    <div class="layer-title">
+                        <i class="fas fa-chess-queen"></i>
+                        任务规划席
+                    </div>
+                    <div class="mission-timeline" id="mission-timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-time">14:30</div>
+                            <div class="timeline-event">DJI-001 开始园区巡检</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-time">14:28</div>
+                            <div class="timeline-event">DJI-002 完成安全扫描</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-time">14:25</div>
+                            <div class="timeline-event">DJI-003 电量告警，返回充电</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-time">14:22</div>
+                            <div class="timeline-event">DJI-004 紧急医疗配送启动</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="command-panel">
+                    <div class="layer-title">
+                        <i class="fas fa-chess-rook"></i>
+                        资源调度席
+                    </div>
+                    <div class="status-grid">
+                        <div class="status-item">
+                            <div class="status-value">3</div>
+                            <div class="status-label">可用无人机</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-value">2</div>
+                            <div class="status-label">充电中</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-value">1</div>
+                            <div class="status-label">维护中</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-value">1</div>
+                            <div class="status-label">紧急任务</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="command-panel">
+                    <div class="layer-title">
+                        <i class="fas fa-chess-bishop"></i>
+                        态势分析席
+                    </div>
+                    <div class="alert-system" id="alert-system">
+                        <div class="alert-item">
+                            <div class="alert-icon alert-info">i</div>
+                            <span>系统运行正常</span>
+                        </div>
+                        <div class="alert-item">
+                            <div class="alert-icon alert-warning">!</div>
+                            <span>DJI-003 电量低于20%</span>
+                        </div>
+                        <div class="alert-item">
+                            <div class="alert-icon alert-critical">!</div>
+                            <span>检测到潜在冲突区域</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作层 - 飞行控制 -->
+        <div class="operational-layer">
+            <div class="layer-title">
+                <i class="fas fa-chess-pawn"></i>
+                操作执行层
+            </div>
+
+            <div class="operator-station">
+                <div class="operator-info">
+                    <div class="operator-status operator-online"></div>
+                    <div>
+                        <div style="font-weight: 500;">操作员 A001</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">飞行操作席</div>
+                    </div>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                    在岗: 3小时24分
+                </div>
+            </div>
+
+            <div class="operator-station">
+                <div class="operator-info">
+                    <div class="operator-status operator-online"></div>
+                    <div>
+                        <div style="font-weight: 500;">操作员 B002</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">监控告警席</div>
+                    </div>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                    在岗: 1小时56分
+                </div>
+            </div>
+
+            <div class="operator-station">
+                <div class="operator-info">
+                    <div class="operator-status operator-offline"></div>
+                    <div>
+                        <div style="font-weight: 500;">操作员 C003</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">应急处理席</div>
+                    </div>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                    离线: 15分钟
+                </div>
+            </div>
+
+            <div class="control-buttons">
+                <button class="control-btn" onclick="manualControl()">
+                    <i class="fas fa-gamepad"></i>
+                    手动控制
+                </button>
+                <button class="control-btn" onclick="autoMode()">
+                    <i class="fas fa-robot"></i>
+                    自动模式
+                </button>
+                <button class="control-btn" onclick="voiceCommand()">
+                    <i class="fas fa-microphone"></i>
+                    语音指令
+                </button>
+            </div>
+
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-value">45</div>
+                    <div class="status-label">控制指令/小时</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-value">99.8%</div>
+                    <div class="status-label">指令成功率</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 加载遮罩 -->
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+
+    <script src="command-center.js"></script>
+    <script>
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function emergencyStop() {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(239, 68, 68, 0.1); z-index: 10000;
+                display: flex; align-items: center; justify-content: center;
+            `;
+            modal.innerHTML = `
+                <div style="background: var(--bg-card); padding: 2rem; border-radius: 0.5rem; max-width: 400px;">
+                    <h3 style="color: var(--error-color); margin-bottom: 1rem;">
+                        <i class="fas fa-exclamation-triangle"></i> 紧急停止确认
+                    </h3>
+                    <p style="margin-bottom: 1rem;">确认执行紧急停止操作？</p>
+                    <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                        此操作将立即召回所有无人机到安全区域
+                    </p>
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" 
+                                class="control-btn">取消</button>
+                        <button onclick="executeEmergencyStop(); this.parentElement.parentElement.parentElement.remove()" 
+                                class="control-btn emergency">确认停止</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function executeEmergencyStop() {
+            // 执行紧急停止逻辑
+            console.log('执行紧急停止');
+            
+            // 显示停止结果
+            const resultModal = document.createElement('div');
+            resultModal.style.cssText = `
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0, 0, 0, 0.8); z-index: 10000;
+                display: flex; align-items: center; justify-content: center;
+            `;
+            resultModal.innerHTML = `
+                <div style="background: var(--bg-card); padding: 2rem; border-radius: 0.5rem; text-align: center;">
+                    <i class="fas fa-check-circle" style="color: var(--success-color); font-size: 2rem; margin-bottom: 1rem;"></i>
+                    <h3>紧急停止已执行</h3>
+                    <p>所有无人机正在返回安全区域</p>
+                    <button onclick="this.parentElement.parentElement.remove()" class="control-btn">确认</button>
+                </div>
+            `;
+            document.body.appendChild(resultModal);
+        }
+
+        function manualControl() {
+            alert('切换到手动控制模式');
+        }
+
+        function autoMode() {
+            alert('切换到自动模式');
+        }
+
+        function voiceCommand() {
+            alert('语音指令系统已激活');
+        }
+
+        // 页面加载完成后隐藏加载遮罩
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                document.getElementById('loading-overlay').style.display = 'none';
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
