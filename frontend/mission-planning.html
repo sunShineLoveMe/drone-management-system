@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>任务规划 - 无人机管理系统</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 顶部导航栏 -->
+        <header class="top-bar">
+            <div class="logo-section">
+                <i class="fas fa-drone"></i>
+                <h1>任务规划</h1>
+            </div>
+            <div class="breadcrumb">
+                <a href="index.html">首页</a>
+                <span>/</span>
+                <span>任务规划</span>
+            </div>
+            <div class="user-section">
+                <div class="user-profile">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiMzQjgyRjYiLz4KPHRleHQgeD0iMjAiIHk9IjI1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSIxNiIgZm9udC1mYW1pbHk9IkFyaWFsIj5BPC90ZXh0Pgo8L3N2Zz4K" alt="用户头像">
+                    <span>管理员</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- 主要内容区域 -->
+        <main class="main-content">
+            <!-- 左侧工具栏 -->
+            <aside class="mission-sidebar">
+                <div class="tool-section">
+                    <h3>任务工具</h3>
+                    <div class="tool-buttons">
+                        <button class="tool-btn active" id="select-tool" data-tool="select">
+                            <i class="fas fa-mouse-pointer"></i>
+                            <span>选择</span>
+                        </button>
+                        <button class="tool-btn" id="waypoint-tool" data-tool="waypoint">
+                            <i class="fas fa-map-pin"></i>
+                            <span>航点</span>
+                        </button>
+                        <button class="tool-btn" id="area-tool" data-tool="area">
+                            <i class="fas fa-draw-polygon"></i>
+                            <span>区域</span>
+                        </button>
+                        <button class="tool-btn" id="route-tool" data-tool="route">
+                            <i class="fas fa-route"></i>
+                            <span>航线</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mission-list-section">
+                    <div class="section-header">
+                        <h3>任务列表</h3>
+                        <button class="btn-primary" id="new-mission-btn">
+                            <i class="fas fa-plus"></i>
+                            新建任务
+                        </button>
+                    </div>
+                    <div class="mission-list" id="mission-list">
+                        <div class="mission-item active" data-mission-id="mission-001">
+                            <div class="mission-info">
+                                <h4>园区巡检任务</h4>
+                                <p>状态: 规划中</p>
+                                <p>无人机: 未分配</p>
+                            </div>
+                            <div class="mission-actions">
+                                <button class="btn-icon" title="编辑">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-icon" title="删除">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mission-item" data-mission-id="mission-002">
+                            <div class="mission-info">
+                                <h4>安全检查任务</h4>
+                                <p>状态: 已完成</p>
+                                <p>无人机: DJI-001</p>
+                            </div>
+                            <div class="mission-actions">
+                                <button class="btn-icon" title="查看">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="drone-assignment-section">
+                    <h3>无人机分配</h3>
+                    <div class="drone-selector">
+                        <select id="drone-select">
+                            <option value="">选择无人机</option>
+                            <option value="drone-001">DJI-M300-001 (可用)</option>
+                            <option value="drone-002">DJI-M300-002 (任务中)</option>
+                            <option value="drone-003">DJI-Mavic-001 (可用)</option>
+                        </select>
+                        <button class="btn-secondary" id="assign-drone-btn">分配</button>
+                    </div>
+                    <div class="drone-status">
+                        <div class="status-item">
+                            <span class="status-dot available"></span>
+                            <span>可用: 2</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-dot busy"></span>
+                            <span>忙碌: 1</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-dot offline"></span>
+                            <span>离线: 0</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- 地图区域 -->
+            <div class="map-section">
+                <div class="map-toolbar">
+                    <div class="toolbar-left">
+                        <button class="btn-secondary" id="save-mission-btn">
+                            <i class="fas fa-save"></i>
+                            保存任务
+                        </button>
+                        <button class="btn-primary" id="execute-mission-btn">
+                            <i class="fas fa-play"></i>
+                            执行任务
+                        </button>
+                    </div>
+                    <div class="toolbar-right">
+                        <button class="btn-icon" id="zoom-in-btn" title="放大">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="btn-icon" id="zoom-out-btn" title="缩小">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <button class="btn-icon" id="fullscreen-btn" title="全屏">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="mission-map" class="mission-map"></div>
+            </div>
+
+            <!-- 右侧属性面板 -->
+            <aside class="properties-panel">
+                <div class="panel-section">
+                    <h3>任务属性</h3>
+                    <div class="form-group">
+                        <label>任务名称</label>
+                        <input type="text" id="mission-name" placeholder="输入任务名称">
+                    </div>
+                    <div class="form-group">
+                        <label>任务类型</label>
+                        <select id="mission-type">
+                            <option value="patrol">巡检</option>
+                            <option value="survey">测绘</option>
+                            <option value="inspection">检查</option>
+                            <option value="delivery">配送</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>优先级</label>
+                        <select id="mission-priority">
+                            <option value="1">低</option>
+                            <option value="2">中</option>
+                            <option value="3">高</option>
+                            <option value="4">紧急</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>预计时长 (分钟)</label>
+                        <input type="number" id="mission-duration" placeholder="60">
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>飞行参数</h3>
+                    <div class="form-group">
+                        <label>飞行高度 (米)</label>
+                        <input type="number" id="flight-altitude" value="100" min="10" max="500">
+                    </div>
+                    <div class="form-group">
+                        <label>飞行速度 (m/s)</label>
+                        <input type="number" id="flight-speed" value="10" min="1" max="20">
+                    </div>
+                    <div class="form-group">
+                        <label>返航高度 (米)</label>
+                        <input type="number" id="return-altitude" value="120" min="10" max="500">
+                    </div>
+                    <div class="form-group">
+                        <label>悬停时间 (秒)</label>
+                        <input type="number" id="hover-time" value="5" min="0" max="60">
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>航点列表</h3>
+                    <div class="waypoint-list" id="waypoint-list">
+                        <div class="waypoint-item">
+                            <div class="waypoint-info">
+                                <span class="waypoint-number">1</span>
+                                <div class="waypoint-coords">
+                                    <small>116.404, 39.915</small>
+                                    <small>高度: 100m</small>
+                                </div>
+                            </div>
+                            <div class="waypoint-actions">
+                                <button class="btn-icon" title="编辑">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-icon" title="删除">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>任务预览</h3>
+                    <div class="mission-summary">
+                        <div class="summary-item">
+                            <label>总航点数:</label>
+                            <span id="total-waypoints">1</span>
+                        </div>
+                        <div class="summary-item">
+                            <label>总距离:</label>
+                            <span id="total-distance">0 km</span>
+                        </div>
+                        <div class="summary-item">
+                            <label>预计时间:</label>
+                            <span id="estimated-time">0 分钟</span>
+                        </div>
+                        <div class="summary-item">
+                            <label>电池消耗:</label>
+                            <span id="battery-usage">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- 新建任务对话框 -->
+    <div class="modal" id="new-mission-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>新建任务</h3>
+                <button class="modal-close" id="close-modal-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>任务名称 *</label>
+                    <input type="text" id="new-mission-name" placeholder="输入任务名称">
+                </div>
+                <div class="form-group">
+                    <label>任务描述</label>
+                    <textarea id="new-mission-description" placeholder="输入任务描述"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>任务模板</label>
+                    <select id="mission-template">
+                        <option value="">选择模板</option>
+                        <option value="patrol">标准巡检</option>
+                        <option value="survey">区域测绘</option>
+                        <option value="inspection">设备检查</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancel-btn">取消</button>
+                <button class="btn-primary" id="create-mission-btn">创建</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="mission-planning.js"></script>
+</body>
+</html>
